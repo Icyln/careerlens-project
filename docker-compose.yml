@@ -1,0 +1,17 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: careerlens_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: careerlens_db
+      MYSQL_USER: careerlens_user
+      MYSQL_PASSWORD: careerlens_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - careerlens_mysql_data:/var/lib/mysql
+
+volumes:
+  careerlens_mysql_data:
