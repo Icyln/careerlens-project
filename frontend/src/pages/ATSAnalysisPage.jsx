@@ -37,9 +37,9 @@ function ResumeSelector({ resumes, selectedResumeId, setSelectedResumeId }) {
         <div className="w-14 h-14 rounded-full bg-[#106EBE]/10 flex items-center justify-center mx-auto mb-4">
           <FileText className="text-[#106EBE]" size={28} />
         </div>
-        <h3 className="text-lg font-bold text-[#111439]">No resume available</h3>
+        <h3 className="text-lg font-semibold text-[#111439]">No resume available</h3>
         <p className="mt-2 text-sm text-[#111439]/60">Please upload a resume first to scan it against a job.</p>
-        <Link to="/resumes" className="mt-5 inline-flex items-center justify-center rounded-xl bg-[#111439] px-6 py-3 text-sm font-bold text-white hover:bg-[#1a1f54] transition-all shadow-md">
+        <Link to="/resumes" className="mt-5 inline-flex items-center justify-center rounded-xl bg-[#111439] px-6 py-3 text-sm font-semibold text-white hover:bg-[#1a1f54] transition-all shadow-md">
           Upload Resume
         </Link>
       </div>
@@ -50,10 +50,10 @@ function ResumeSelector({ resumes, selectedResumeId, setSelectedResumeId }) {
     const resume = resumes[0];
     return (
       <div className="rounded-2xl bg-white p-6 border border-[#111439]/5 shadow-sm">
-        <p className="text-xs font-bold uppercase tracking-widest text-[#106EBE] mb-3">Selected Resume</p>
-        <h3 className="text-base font-bold text-[#111439] truncate">{toText(resume.original_name, 'Unnamed resume')}</h3>
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#106EBE] mb-3">Selected Resume</p>
+        <h3 className="text-base font-semibold text-[#111439] truncate">{toText(resume.original_name, 'Unnamed resume')}</h3>
         <div className="mt-3 flex flex-wrap gap-3 text-xs text-[#111439]/50 font-medium">
-          <span className="bg-[#F8F8F9] border border-[#111439]/5 px-2.5 py-1 rounded-md font-bold uppercase tracking-wide text-[#111439]">{resume.file_type?.toUpperCase()}</span>
+          <span className="bg-[#F8F8F9] border border-[#111439]/5 px-2.5 py-1 rounded-md font-semibold uppercase tracking-wide text-[#111439]">{resume.file_type?.toUpperCase()}</span>
           <span>•</span>
           <span>{formatFileSize(resume.file_size)}</span>
           <span>•</span>
@@ -65,7 +65,7 @@ function ResumeSelector({ resumes, selectedResumeId, setSelectedResumeId }) {
 
   return (
     <div className="rounded-2xl bg-white p-6 border border-[#111439]/5 shadow-sm">
-      <label className="block text-xs font-bold uppercase tracking-widest text-[#111439]/70 mb-4" htmlFor="resume-select">
+      <label className="block text-xs font-semibold uppercase tracking-widest text-[#111439]/70 mb-4" htmlFor="resume-select">
         Choose a resume to scan
       </label>
       <div className="grid gap-3 max-h-[240px] overflow-y-auto pr-1 custom-scrollbar">
@@ -83,7 +83,7 @@ function ResumeSelector({ resumes, selectedResumeId, setSelectedResumeId }) {
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className={`text-base font-bold truncate ${isSelected ? 'text-[#106EBE]' : 'text-[#111439]'}`}>
+                <p className={`text-base font-semibold truncate ${isSelected ? 'text-[#106EBE]' : 'text-[#111439]'}`}>
                   {toText(resume.original_name, 'Unnamed resume')}
                 </p>
                 {isSelected && <CheckCircle2 size={20} className="text-[#106EBE] shrink-0 ml-2" />}
@@ -140,7 +140,7 @@ function BulletCard({ title, items = [], empty = 'Nothing to show here.', tone =
 
       return (
         <>
-          <span className="font-semibold text-[#111439]">{lead}</span>
+          <span className="font-bold text-[#111439]">{lead}</span>
           <span className="font-normal text-[#111439]/70">{rest}</span>
         </>
       );
@@ -211,12 +211,12 @@ function ScoreCard({ card }) {
     // 'h-full' ensures all cards in the grid row have the same height
     <div className="rounded-2xl bg-white p-6 border border-[#111439]/5 shadow-sm flex flex-col h-full">
       <div className="flex items-start justify-between gap-3 mb-4">
-        <p className="text-xs font-bold uppercase tracking-widest text-[#111439]/50">{toText(card?.name, 'Score')}</p>
-        <span className={`rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border ${badgeClasses}`}>
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#111439]/50">{toText(card?.name, 'Score')}</p>
+        <span className={`rounded-md px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider border ${badgeClasses}`}>
           {toText(card?.level, 'Unknown')}
         </span>
       </div>
-      <p className="text-4xl font-extrabold text-[#111439]">{score}%</p>
+      <p className="text-4xl font-semibold text-[#111439]">{score}%</p>
       {/* 'flex-grow' fills remaining vertical space so content is aligned */}
       <p className="mt-3 text-sm leading-relaxed text-[#111439]/60 flex-grow">
         {toText(card?.feedback, '')}
@@ -316,14 +316,14 @@ function IssueGroupCard({ group, icon }) {
           </div>
 
           <div>
-            <h4 className="text-base font-bold text-[#111439]">{groupName}</h4>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#111439]/40 mt-1">
+            <h4 className="text-base font-semibold text-[#111439]">{groupName}</h4>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#111439]/40 mt-1">
               {toText(safeGroup.status, safeGroup.level || '')}
             </p>
           </div>
         </div>
 
-        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide border ${badgeColor}`}>
+        <span className={`px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wide border ${badgeColor}`}>
           {badgeText}
         </span>
       </div>
@@ -331,7 +331,7 @@ function IssueGroupCard({ group, icon }) {
       <div className="flex-1 space-y-5">
         {detectedItems.length > 0 && (
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#0D9476] mb-2.5">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#0D9476] mb-2.5">
               {detectedLabel}
             </p>
 
@@ -348,7 +348,7 @@ function IssueGroupCard({ group, icon }) {
 
         {issueItems.length > 0 && (
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-2.5">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 mb-2.5">
               {issueLabel}
             </p>
 
@@ -403,7 +403,7 @@ function ContactInfoCard({ contactInfo }) {
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#111439]/40">
             Email
           </p>
-          <p className="mt-1.5 text-sm font-bold text-[#111439] truncate" title={email}>
+          <p className="mt-1.5 text-sm font-semibold text-[#111439] truncate" title={email}>
             {email}
           </p>
         </div>
@@ -412,7 +412,7 @@ function ContactInfoCard({ contactInfo }) {
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#111439]/40">
             Phone
           </p>
-          <p className="mt-1.5 text-sm font-bold text-[#111439] truncate" title={phone}>
+          <p className="mt-1.5 text-sm font-semibold text-[#111439] truncate" title={phone}>
             {phone}
           </p>
         </div>
@@ -422,7 +422,7 @@ function ContactInfoCard({ contactInfo }) {
             Location
           </p>
           <p
-            className={`mt-1.5 text-sm font-bold truncate ${
+            className={`mt-1.5 text-sm font-semibold truncate ${
               contactInfo?.location ? 'text-[#111439]' : 'text-amber-600'
             }`}
             title={location}
@@ -575,7 +575,7 @@ export default function ATSAnalysisPage() {
   const topFixes = toArray(atsSummary.top_fixes);
 
   return (
-    <div className="space-y-8 relative font-['CoFo_Sans',_Inter,_sans-serif] text-[#111439] min-h-screen pb-16 z-0 selection:bg-[#0FFCBE]/30">
+    <div className="space-y-8 relative font-['Inter',_ui-sans-serif,_system-ui,_sans-serif] text-[#111439] min-h-screen pb-16 z-0 selection:bg-[#0FFCBE]/30">
       
       {/* Ambient Background Glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] max-w-[800px] h-[600px] bg-gradient-to-br from-[#106EBE]/10 to-[#0FFCBE]/10 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
@@ -584,13 +584,13 @@ export default function ATSAnalysisPage() {
       <section className="bg-white/60 backdrop-blur-2xl border border-white/80 rounded-[2rem] p-8 sm:p-10 shadow-xl shadow-[#111439]/5">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white border border-[#111439]/10 shadow-sm text-[11px] font-bold uppercase tracking-widest text-[#106EBE] mb-5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white border border-[#111439]/10 shadow-sm text-[11px] font-semibold uppercase tracking-widest text-[#106EBE] mb-5">
               <Target size={14} />
               Resume Scanner
             </div>
             {/* The main heading remains the same size as requested */}
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111439] leading-tight mb-3">
-              Check if your resume matches the job.
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 mb-3">
+              Check if your resume matches the job
             </h1>
             <p className="text-base leading-relaxed text-[#111439]/70">
               We compare your resume against the job description to find missing skills, format issues, and give you clear advice on how to improve your chances.
@@ -631,8 +631,8 @@ export default function ATSAnalysisPage() {
           {selectedResume && (
             <div className="rounded-2xl bg-[#111439] p-6 text-white shadow-xl shadow-[#111439]/10 relative overflow-hidden">
                <div className="absolute top-0 right-0 w-40 h-40 bg-[#106EBE] opacity-20 blur-2xl rounded-full"></div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-2">Target File</p>
-              <h3 className="text-lg font-bold truncate pr-4">{toText(selectedResume.original_name, 'Unnamed resume')}</h3>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-2">Target File</p>
+              <h3 className="text-lg font-semibold truncate pr-4">{toText(selectedResume.original_name, 'Unnamed resume')}</h3>
               <p className="mt-2 text-xs font-medium text-white/60">Ready for scan</p>
             </div>
           )}
@@ -641,7 +641,7 @@ export default function ATSAnalysisPage() {
         <div className="rounded-3xl bg-white/80 backdrop-blur-md p-6 sm:p-8 shadow-sm border border-[#111439]/5">
           <div className="grid gap-6">
             <div>
-              <label htmlFor="job-title" className="block text-xs font-bold uppercase tracking-widest text-[#111439]/70 mb-3 pl-1">Target Job Title</label>
+              <label htmlFor="job-title" className="block text-xs font-semibold uppercase tracking-widest text-[#111439]/70 mb-3 pl-1">Target Job Title</label>
               <input
                 id="job-title"
                 type="text"
@@ -653,7 +653,7 @@ export default function ATSAnalysisPage() {
             </div>
 
             <div>
-              <label htmlFor="job-description" className="block text-xs font-bold uppercase tracking-widest text-[#111439]/70 mb-3 pl-1">Job Description</label>
+              <label htmlFor="job-description" className="block text-xs font-semibold uppercase tracking-widest text-[#111439]/70 mb-3 pl-1">Job Description</label>
               <textarea
                 id="job-description"
                 value={jobDescription}
@@ -667,7 +667,7 @@ export default function ATSAnalysisPage() {
             <button
               type="submit"
               disabled={analyzing || loadingResumes || !resumes.length}
-              className="relative w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#106EBE] to-[#0FFCBE] px-6 py-4 text-base font-bold text-white shadow-xl shadow-[#106EBE]/20 transition-all hover:scale-[1.01] hover:shadow-[#106EBE]/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 group overflow-hidden"
+              className="relative w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#106EBE] to-[#0FFCBE] px-6 py-4 text-base font-semibold text-white shadow-xl shadow-[#106EBE]/20 transition-all hover:scale-[1.01] hover:shadow-[#106EBE]/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 group overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
               {analyzing ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
@@ -683,11 +683,11 @@ export default function ATSAnalysisPage() {
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#111439]/5 pb-6">
   <div>
-    <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#106EBE]/15 bg-[#106EBE]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#106EBE]">
+    <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#106EBE]/15 bg-[#106EBE]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#106EBE]">
       {reportSource === 'latest' ? 'Loaded from saved history' : 'New scan'}
     </div>
 
-    <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111439]">
+    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111439]">
       {reportSource === 'latest' ? 'Latest Saved ATS Report' : 'Scan Results'}
     </h2>
 
@@ -702,7 +702,7 @@ export default function ATSAnalysisPage() {
     <button
       type="button"
       onClick={handleStartNewScan}
-      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#111439]/10 bg-white px-5 py-3 text-sm font-bold text-[#111439] shadow-sm transition hover:bg-[#F8F8F9] hover:-translate-y-0.5"
+      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#111439]/10 bg-white px-5 py-3 text-sm font-semibold text-[#111439] shadow-sm transition hover:bg-[#F8F8F9] hover:-translate-y-0.5"
     >
       <Search size={16} />
       Run New Scan
@@ -716,7 +716,7 @@ export default function ATSAnalysisPage() {
     <button
       type="button"
       onClick={handleOpenTailor}
-      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#111439] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#111439]/20 transition hover:bg-[#1a1f54] hover:-translate-y-0.5"
+      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#111439] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#111439]/20 transition hover:bg-[#1a1f54] hover:-translate-y-0.5"
     >
       <WandSparkles size={16} className="text-[#0FFCBE]" />
       Tailor Resume
@@ -786,11 +786,11 @@ export default function ATSAnalysisPage() {
               <div className="relative z-10">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-10 border-b border-[#111439]/5 pb-8">
                   <div className="max-w-3xl">
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white shadow-sm border border-[#111439]/5 text-xs font-bold uppercase tracking-widest text-[#106EBE] mb-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white shadow-sm border border-[#111439]/5 text-xs font-semibold uppercase tracking-widest text-[#106EBE] mb-4">
                       <BrainCircuit size={16} />
                       Recruiter Review
                     </div>
-                    <h3 className="text-2xl sm:text-3xl font-extrabold text-[#111439]">AI Analysis</h3>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-[#111439]">AI Analysis</h3>
                     <p className="mt-3 text-base leading-relaxed text-[#111439]/80 font-medium text-justify">
                       {toText(ai.summary_10_second_read || ai.message, 'No summary available.')}
                     </p>
@@ -802,13 +802,13 @@ export default function ATSAnalysisPage() {
                   {/* Left Col: AI Metrics and Graphs */}
                   <div className="space-y-6 text-justify">
                      <div className="bg-white rounded-3xl p-8 border border-[#111439]/5 shadow-sm">
-                        <h4 className="text-sm font-bold uppercase tracking-widest text-[#111439]/50 mb-3">Overall Alignment</h4>
+                        <h4 className="text-sm font-semibold uppercase tracking-widest text-[#111439]/50 mb-3">Overall Alignment</h4>
                         <p className="text-3xl font-extrabold text-[#106EBE] mb-3">{toText(ai.alignment_explanation?.level, 'Analyzed')}</p>
                         <p className="text-sm text-[#111439]/70 leading-relaxed font-medium">{toText(ai.alignment_explanation?.explanation, 'No detailed explanation provided.')}</p>
                      </div>
 
                      <div className="bg-white rounded-3xl p-8 border border-[#111439]/5 shadow-sm">
-                        <h4 className="text-sm font-bold uppercase tracking-widest text-[#111439]/50 mb-6">Recruiter Metric Breakdown</h4>
+                        <h4 className="text-sm font-semibold uppercase tracking-widest text-[#111439]/50 mb-6">Recruiter Metric Breakdown</h4>
                         <div className="space-y-6">
                            {(toArray(ai.visualization).length ? toArray(ai.visualization) : [
                              { label: 'Role Fit Overview', value: 0, reason: 'Pending data...' }

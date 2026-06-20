@@ -17,6 +17,7 @@ import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
 import CoverLetterPage from './pages/CoverLetterPage.jsx';
 import InterviewPrepPage from './pages/InterviewPrepPage.jsx';
+import CareerGuidancePage from './pages/CareerGuidancePage.jsx';
 
 function ProtectedPage({ children }) {
   return (
@@ -151,6 +152,14 @@ function AppRoutes() {
         element={
           <ProtectedPage>
             <InterviewPrepPage/>
+          </ProtectedPage>
+        }/>
+
+      <Route
+        path="/career-guidance"
+        element={
+          <ProtectedPage>
+            <CareerGuidancePage/>
           </ProtectedPage>
         }/>
 

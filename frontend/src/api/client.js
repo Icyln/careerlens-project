@@ -178,6 +178,11 @@ export async function fetchDashboard({ useAi = false } = {}) {
   return response.data;
 }
 
+export async function generateCareerGuidance(payload = {}) {
+  const response = await api.post('/analysis/career-guidance/', payload);
+  return response.data;
+}
+
 export async function fetchRecommendedJobs({
   query = '',
   country = '',

@@ -33,6 +33,7 @@ from .services.dashboard_engine import build_dashboard_payload
 from .services.interview_engine import generate_interview_prep
 from .services.job_search import search_jobs
 from .services.report_pdf import build_report_pdf
+from .services.career_guidance_engine import generate_personalized_career_guidance
 
 
 DAILY_RESUME_UPLOAD_LIMIT = 5
@@ -172,6 +173,44 @@ class AnalysisReportViewSet(viewsets.ModelViewSet):
         metrics['user_role'] = 'admin' if request.user.is_staff else 'user'
 
         return Response(metrics, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['post'], url_path='career-guidance')
+    def career_guidance(self, request):
+        resumes_queryset = Resume.objects.annotate(reports_count=Count('reports')).order_by('-uploaded_at')
+        reports_queryset = AnalysisReport.objects.select_related('resume', 'resume__owner').order_by('-created_at')
+        applications_queryset = JobApplication.objects.order_by('-updated_at', '-created_at')
+
+        if not request.user.is_staff:
+            resumes_queryset = resumes_queryset.filter(owner=request.user)
+            reports_queryset = reports_queryset.filter(resume__owner=request.user)
+            applications_queryset = applications_queryset.filter(owner=request.user)
+
+        resumes = list(resumes_queryset)
+        reports = list(reports_queryset[:50])
+        applications = list(applications_queryset[:100])
+
+        metrics = build_dashboard_payload(resumes, reports, applications)
+
+        user_context = {
+            'career_goals': str(request.data.get('career_goals') or '').strip(),
+            'strengths': str(request.data.get('strengths') or '').strip(),
+            'weaknesses': str(request.data.get('weaknesses') or '').strip(),
+            'pain_points': str(request.data.get('pain_points') or '').strip(),
+            'target_jobs': str(request.data.get('target_jobs') or '').strip(),
+            'target_companies': str(request.data.get('target_companies') or '').strip(),
+            'preferred_industries': str(request.data.get('preferred_industries') or '').strip(),
+            'long_term_goals': str(request.data.get('long_term_goals') or '').strip(),
+            'timeline': str(request.data.get('timeline') or '').strip(),
+            'constraints': str(request.data.get('constraints') or '').strip(),
+            'extra_notes': str(request.data.get('extra_notes') or '').strip(),
+        }
+
+        result = generate_personalized_career_guidance(
+            user_context=user_context,
+            dashboard_metrics=metrics,
+        )
+
+        return Response(result, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='jobs')
     def jobs(self, request):

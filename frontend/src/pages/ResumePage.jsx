@@ -71,7 +71,7 @@ export default function ResumePage() {
   };
 
   return (
-    <div className="space-y-6 relative font-['CoFo_Sans',_Inter,_sans-serif] text-[#111439] min-h-screen pb-12 selection:bg-[#0FFCBE]/30 bg-[#F8F8F9] z-0 overflow-hidden">
+    <div className="space-y-6 relative font-['Inter',_ui-sans-serif,_system-ui,_sans-serif] text-[#111439] min-h-screen pb-12 selection:bg-[#0FFCBE]/30 bg-[#F8F8F9] z-0 overflow-hidden">
       
       {/* Soft Ambient Background Glows (Matching Landing Page exactly) */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] max-w-[800px] h-[600px] bg-gradient-to-br from-[#106EBE]/10 to-[#0FFCBE]/10 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
@@ -80,7 +80,7 @@ export default function ResumePage() {
       <section className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr] lg:items-stretch relative z-10">
         <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-xl shadow-[#111439]/5 flex flex-col justify-between border border-[#111439]/5">
           <div>    
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111439] leading-tight">
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
               Manage Your Resumes
             </h1>
             
@@ -94,25 +94,25 @@ export default function ResumePage() {
             <div className="rounded-2xl bg-[#F8F8F9] border border-[#111439]/5 p-4 transition-colors hover:bg-white hover:border-[#106EBE]/20">
               <div className="flex items-center gap-2 text-[#106EBE]">
                 <Database size={16} />
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#111439]/60">Saved</span>
+                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[#111439]/60">Saved</span>
               </div>
-              <p className="mt-2 text-2xl font-extrabold text-[#111439]">{resumes.length}</p>
+              <p className="mt-2 text-2xl font-semibold text-[#111439]">{resumes.length}</p>
             </div>
 
             <div className="rounded-2xl bg-[#F8F8F9] border border-[#111439]/5 p-4 transition-colors hover:bg-white hover:border-[#106EBE]/20">
               <div className="flex items-center gap-2 text-[#0D9476]">
                 <ShieldCheck size={16} />
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#111439]/60">Types</span>
+                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[#111439]/60">Types</span>
               </div>
-              <p className="mt-2 text-xs sm:text-sm font-extrabold text-[#111439]">PDF & DOCX</p>
+              <p className="mt-2 text-xs sm:text-sm font-semibold text-[#111439]">PDF & DOCX</p>
             </div>
 
             <div className="rounded-2xl bg-[#F8F8F9] border border-[#111439]/5 p-4 transition-colors hover:bg-white hover:border-[#106EBE]/20">
               <div className="flex items-center gap-2 text-[#111439]">
                 <Sparkles size={16} className="text-[#0FFCBE]" />
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#111439]/60">Tools</span>
+                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[#111439]/60">Tools</span>
               </div>
-              <p className="mt-2 text-xs sm:text-sm font-extrabold text-[#111439]">ATS + AI Analysis</p>
+              <p className="mt-2 text-xs sm:text-sm font-semibold text-[#111439]">ATS + AI Analysis</p>
             </div>
           </div>
         </div>
@@ -133,10 +133,10 @@ export default function ResumePage() {
       <section className="relative z-10">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#111439]">Your Saved Resumes</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#111439]">Your Saved Resumes</h2>
             <p className="text-xs sm:text-sm text-[#111439]/60 mt-1">Choose a resume below to see how well it matches a job.</p>
           </div>
-          <div className="rounded-xl bg-white border border-[#111439]/10 px-4 py-2 text-xs sm:text-sm font-bold text-[#111439]/70 shadow-sm flex items-center gap-2">
+          <div className="rounded-xl bg-white border border-[#111439]/10 px-4 py-2 text-xs sm:text-sm font-semibold text-[#111439]/70 shadow-sm flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#106EBE]"></span>
             <span>Storage Used: {(totalStorage / 1024 / 1024).toFixed(2)} MB</span>
           </div>
