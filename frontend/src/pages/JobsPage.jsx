@@ -301,17 +301,17 @@ async function handleTrackJob(job, status) {
 const jobs = toArray(data?.jobs);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-['Inter',_ui-sans-serif,_system-ui,_sans-serif]">
       <section className="glass-panel rounded-[2rem] p-7 sm:p-10">
-        <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-tr from-[#106EBE] to-[#0FFCBE] px-4 py-2 text-sm font-black text-white shadow-sm">
-          <Search size={16} className="text-white" />
-          Job Recommendations
+        <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
+          <Search size={16} />
+          Search Dream Jobs
         </div>
-        <h1 className="mt-6 max-w-4xl text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
-          Search live jobs by title, location, and posting date.
+        <h1 className="mt-6 max-w-4xl text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+          Search live jobs by title, location, and posting date
         </h1>
-        <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
-          Enter a job title and location, then click Search.
+        <p className="mt-5 max-w-3xl text-md leading-8 text-slate-600">
+          Enter a job title, choose location, date range then click Search.
         </p>
       </section>
 
@@ -319,7 +319,7 @@ const jobs = toArray(data?.jobs);
 
       <div className="grid gap-5 rounded-3xl bg-white p-5 ring-1 ring-slate-200 lg:grid-cols-6">
   <div className="lg:col-span-3">
-    <label className="text-sm font-black text-slate-950">Job title</label>
+    <label className="text-sm font-bold text-slate-950">Job title</label>
     <input
       value={query}
       onChange={(event) => setQuery(event.target.value)}
@@ -329,7 +329,7 @@ const jobs = toArray(data?.jobs);
   </div>
 
   <div>
-    <label className="text-sm font-black text-slate-950">Country</label>
+    <label className="text-sm font-bold text-slate-950">Country</label>
     <select
       value={country}
       onChange={(event) => setCountry(event.target.value)}
@@ -357,7 +357,7 @@ const jobs = toArray(data?.jobs);
   </div>
 
   <div>
-    <label className="text-sm font-black text-slate-950">Sort</label>
+    <label className="text-sm font-bold text-slate-950">Sort</label>
     <select
       value={sort}
       onChange={(event) => setSort(event.target.value)}
@@ -370,7 +370,7 @@ const jobs = toArray(data?.jobs);
   </div>
 
   <div>
-    <label className="text-sm font-black text-slate-950">Posted within</label>
+    <label className="text-sm font-bold text-slate-950">Posted within</label>
     <select
       value={maxDaysOld}
       onChange={(event) => setMaxDaysOld(Number(event.target.value))}
@@ -388,7 +388,7 @@ const jobs = toArray(data?.jobs);
     type="button"
     onClick={loadJobs}
     disabled={loading}
-    className="mt-7 inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+    className="mt-7 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-400 px-5 py-3 text-sm font-black text-white disabled:opacity-60"
   >
     {loading ? <Loader2 className="animate-spin" size={18} /> : <Search size={18} />}
     Search
@@ -406,20 +406,6 @@ const jobs = toArray(data?.jobs);
           <span className="font-black">{data.query_profile.primary_query}</span>
           {data.query_profile.country_name ? ` (${data.query_profile.country_name})` : ''}
           {data.query_profile.max_days_old ? ` from the last ${data.query_profile.max_days_old} days` : ''}.
-        </p>
-      </div>
-    </div>
-  </div>
-)}
-
-{!hasSearched && (
-  <div className="rounded-3xl border border-blue-100 bg-blue-50 p-5 text-blue-900">
-    <div className="flex items-start gap-3">
-      <Sparkles size={20} className="mt-1 shrink-0" />
-      <div>
-        <p className="font-black">Start your job search</p>
-        <p className="mt-1 text-sm leading-6">
-          Enter a job title, choose a location/date range, then click Search. CareerLens will not search automatically.
         </p>
       </div>
     </div>

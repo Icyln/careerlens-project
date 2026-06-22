@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Database, ShieldCheck, Sparkles } from 'lucide-react';
+import { Database, ShieldCheck, Sparkles, UserRoundPen } from 'lucide-react';
 import Alert from '../components/Alert.jsx';
 import FileDropzone from '../components/FileDropzone.jsx';
 import ResumeCard from '../components/ResumeCard.jsx';
@@ -79,7 +79,11 @@ export default function ResumePage() {
       {/* Hero Section */}
       <section className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr] lg:items-stretch relative z-10">
         <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-xl shadow-[#111439]/5 flex flex-col justify-between border border-[#111439]/5">
-          <div>    
+          <div> 
+            <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
+              <UserRoundPen size={14} />
+              Upload Resume
+              </div>   
             <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
               Manage Your Resumes
             </h1>

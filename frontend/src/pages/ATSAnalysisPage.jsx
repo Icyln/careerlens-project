@@ -584,7 +584,7 @@ export default function ATSAnalysisPage() {
       <section className="bg-white/60 backdrop-blur-2xl border border-white/80 rounded-[2rem] p-8 sm:p-10 shadow-xl shadow-[#111439]/5">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white border border-[#111439]/10 shadow-sm text-[11px] font-semibold uppercase tracking-widest text-[#106EBE] mb-5">
+            <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
               <Target size={14} />
               Resume Scanner
             </div>
@@ -601,12 +601,12 @@ export default function ATSAnalysisPage() {
           <div className="flex gap-4 sm:w-auto w-full">
             <div className="flex-1 lg:w-48 rounded-2xl bg-white border border-[#111439]/5 p-5 sm:p-6 shadow-sm hover:shadow-md hover:border-[#106EBE]/20 transition-all">
               <ListChecks className="text-[#106EBE] mb-3" size={28} />
-              <p className="text-sm sm:text-base font-extrabold text-[#111439]">ATS Check</p>
+              <p className="text-sm sm:text-base font-bold text-[#111439]">ATS Check</p>
               <p className="text-xs text-[#111439]/60 mt-1.5 font-medium">Finds exact keywords</p>
             </div>
             <div className="flex-1 lg:w-48 rounded-2xl bg-white border border-[#111439]/5 p-5 sm:p-6 shadow-sm hover:shadow-md hover:border-[#0FFCBE]/30 transition-all">
               <BrainCircuit className="text-[#0D9476] mb-3" size={28} />
-              <p className="text-sm sm:text-base font-extrabold text-[#111439]">Smart Review</p>
+              <p className="text-sm sm:text-base font-bold text-[#111439]">Smart Review</p>
               <p className="text-xs text-[#111439]/60 mt-1.5 font-medium">Reads like a recruiter</p>
             </div>
           </div>
@@ -667,7 +667,7 @@ export default function ATSAnalysisPage() {
             <button
               type="submit"
               disabled={analyzing || loadingResumes || !resumes.length}
-              className="relative w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#106EBE] to-[#0FFCBE] px-6 py-4 text-base font-semibold text-white shadow-xl shadow-[#106EBE]/20 transition-all hover:scale-[1.01] hover:shadow-[#106EBE]/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 group overflow-hidden"
+              className="relative w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-400 px-6 py-4 text-base font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 group overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
               {analyzing ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
@@ -683,11 +683,9 @@ export default function ATSAnalysisPage() {
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#111439]/5 pb-6">
   <div>
-    <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#106EBE]/15 bg-[#106EBE]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#106EBE]">
-      {reportSource === 'latest' ? 'Loaded from saved history' : 'New scan'}
-    </div>
+    
 
-    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111439]">
+    <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#111439]">
       {reportSource === 'latest' ? 'Latest Saved ATS Report' : 'Scan Results'}
     </h2>
 
@@ -760,7 +758,7 @@ export default function ATSAnalysisPage() {
           <ContactInfoCard contactInfo={atsSummary.contact_info} />
 
           <div className="mt-10 mb-6">
-            <h3 className="text-xl font-extrabold text-[#111439] flex items-center gap-2.5">
+            <h3 className="text-xl font-bold text-[#111439] flex items-center gap-2.5">
               <ListChecks size={24} className="text-[#106EBE]" /> Detailed Checklist
             </h3>
             <p className="text-sm text-[#111439]/60 mt-1.5 font-medium">Review what the system found and what you need to fix.</p>
@@ -790,7 +788,7 @@ export default function ATSAnalysisPage() {
                       <BrainCircuit size={16} />
                       Recruiter Review
                     </div>
-                    <h3 className="text-2xl sm:text-3xl font-bold text-[#111439]">AI Analysis</h3>
+                    <h3 className="text-2xl sm:text-3xl font-semibold text-[#111439]">AI Analysis</h3>
                     <p className="mt-3 text-base leading-relaxed text-[#111439]/80 font-medium text-justify">
                       {toText(ai.summary_10_second_read || ai.message, 'No summary available.')}
                     </p>

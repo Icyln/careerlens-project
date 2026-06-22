@@ -204,8 +204,8 @@ function KpiCard({ label, value, caption, icon: Icon, tone = 'blue' }) {
     <div className="group rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-200/70">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">{label}</p>
-          <p className="mt-3 text-3xl font-black tracking-tight text-slate-950">{value}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{label}</p>
+          <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">{value}</p>
           <p className="mt-1 text-xs font-bold leading-relaxed text-slate-500">{caption}</p>
         </div>
 
@@ -220,7 +220,7 @@ function KpiCard({ label, value, caption, icon: Icon, tone = 'blue' }) {
 function Field({ label, children, hint }) {
   return (
     <div>
-      <label className="text-sm font-black text-slate-950">{label}</label>
+      <label className="text-sm font-semibold text-slate-950">{label}</label>
       {hint && <p className="mt-1 text-xs font-medium text-slate-400">{hint}</p>}
       <div className="mt-2">{children}</div>
     </div>
@@ -298,7 +298,7 @@ function PipelineSummary({ items, activeStatus, onPickStatus }) {
     <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-black text-slate-950">Pipeline summary</h2>
+          <h2 className="text-lg font-bold text-slate-950">Pipeline summary</h2>
           <p className="mt-1 text-sm font-medium text-slate-500">
             Click a stage to filter the application list.
           </p>
@@ -332,7 +332,7 @@ function PipelineSummary({ items, activeStatus, onPickStatus }) {
               }`}
             >
               <p className="text-[10px] font-black uppercase tracking-[0.18em] opacity-70">{item.label}</p>
-              <p className="mt-2 text-2xl font-black tracking-tight">{item.count}</p>
+              <p className="mt-2 text-2xl font-semibold tracking-tight">{item.count}</p>
             </button>
           );
         })}
@@ -355,13 +355,13 @@ function ApplicationCard({ application, onEdit, onDelete, onStatusChange }) {
 
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="truncate text-lg font-black tracking-tight text-slate-950">
+              <h3 className="truncate text-lg font-semibold tracking-tight text-slate-950">
                 {application.job_title || 'Untitled role'}
               </h3>
               <PriorityPill priority={application.priority} />
             </div>
 
-            <p className="mt-1 flex flex-wrap items-center gap-2 text-sm font-bold text-slate-600">
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-600">
               <Building2 size={15} className="text-slate-400" />
               {application.company_name || 'Company not set'}
             </p>
@@ -412,7 +412,7 @@ function ApplicationCard({ application, onEdit, onDelete, onStatusChange }) {
             <CalendarDays size={13} />
             Applied
           </p>
-          <p className="mt-2 text-sm font-black text-slate-800">{formatDate(application.date_applied)}</p>
+          <p className="mt-2 text-sm font-bold text-slate-800">{formatDate(application.date_applied)}</p>
         </div>
 
         <div className={`rounded-2xl p-4 ring-1 ${followUpDue ? 'bg-rose-50 ring-rose-100' : 'bg-slate-50 ring-slate-100'}`}>
@@ -420,7 +420,7 @@ function ApplicationCard({ application, onEdit, onDelete, onStatusChange }) {
             <CalendarClock size={13} />
             Follow-up
           </p>
-          <p className={`mt-2 text-sm font-black ${followUpDue ? 'text-rose-700' : 'text-slate-800'}`}>
+          <p className={`mt-2 text-sm font-bold ${followUpDue ? 'text-rose-700' : 'text-slate-800'}`}>
             {formatDate(application.next_follow_up_date)}
           </p>
           {application.next_follow_up_date && (
@@ -435,7 +435,7 @@ function ApplicationCard({ application, onEdit, onDelete, onStatusChange }) {
             <FileText size={13} />
             Source
           </p>
-          <p className="mt-2 text-sm font-black text-slate-800">
+          <p className="mt-2 text-sm font-bold text-slate-800">
             {application.source_label || sourceLabel(application.source)}
           </p>
         </div>
@@ -477,7 +477,7 @@ function ApplicationCard({ application, onEdit, onDelete, onStatusChange }) {
             href={application.job_url}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-xs font-black text-white transition hover:-translate-y-0.5 hover:bg-slate-800"
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-xs font-bold text-white transition hover:-translate-y-0.5 hover:bg-slate-800"
           >
             Open job
             <ExternalLink size={14} />
@@ -509,11 +509,11 @@ function ApplicationFormPanel({ open, editingId, form, saving, onClose, onSubmit
         <div className="border-b border-slate-200 px-6 py-5 sm:px-7">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-blue-700 ring-1 ring-blue-100">
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
                 <Briefcase size={13} />
                 {editingId ? 'Editing application' : 'New application'}
               </div>
-              <h2 className="mt-3 text-lg font-black tracking-tight text-slate-950">
+              <h2 className="mt-3 text-lg font-semibold tracking-tight text-slate-950">
                 {editingId ? 'Update tracked role' : 'Add a job application'}
               </h2>
               <p className="mt-1 text-sm font-medium text-slate-500">
@@ -857,23 +857,20 @@ export default function ApplicationsPage() {
   }
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-7 font-['Inter',_ui-sans-serif,_system-ui,_sans-serif]">
       <section className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-blue-100 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-emerald-100 blur-3xl" />
-
         <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white shadow-lg shadow-slate-200">
+            <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
               <ClipboardList size={15} />
               Application tracker
             </div>
 
-            <h1 className="mt-5 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+            <h1 className="mt-6 max-w-4xl text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
               Manage your job applications
             </h1>
 
-            <p className="mt-4 max-w-2xl text-base font-medium leading-8 text-slate-600">
+            <p className="mt-4 max-w-2xl text-base font-md leading-8 text-slate-600">
               Track saved jobs, applications, interviews, offers, follow-ups, notes, and important links in one clean workspace.
             </p>
           </div>
@@ -882,7 +879,7 @@ export default function ApplicationsPage() {
             <button
               type="button"
               onClick={openCreateForm}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-400 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700"
             >
               <Plus size={18} />
               New application
@@ -955,7 +952,7 @@ export default function ApplicationsPage() {
         <form onSubmit={applyFilters} className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="flex items-center gap-2 text-lg font-black text-slate-950">
+              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-950">
                 <SlidersHorizontal size={19} />
                 Search and filters
               </h2>
@@ -1035,7 +1032,7 @@ export default function ApplicationsPage() {
       <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="flex items-center gap-2 text-xl font-black tracking-tight text-slate-950">
+            <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-slate-950">
               <Building2 size={21} />
               Tracked applications
             </h2>
@@ -1068,14 +1065,14 @@ export default function ApplicationsPage() {
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-white text-slate-400 shadow-sm ring-1 ring-slate-200">
               <ClipboardList size={34} />
             </div>
-            <h3 className="mt-5 text-xl font-black text-slate-950">No applications found</h3>
+            <h3 className="mt-5 text-xl font-semibold text-slate-950">No applications found</h3>
             <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-7 text-slate-500">
               Add your first saved or applied job, or clear filters if you expected to see existing applications.
             </p>
             <button
               type="button"
               onClick={openCreateForm}
-              className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-blue-700"
+              className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-400 px-5 py-3 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-blue-700"
             >
               <Plus size={18} />
               Add first application

@@ -1025,7 +1025,7 @@ export default function InterviewPrepPage() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
               <BrainCircuit size={14} />
-              Gemini interview coach
+              Interview coach
             </div>
 
             <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">

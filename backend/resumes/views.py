@@ -293,6 +293,7 @@ class AnalysisReportViewSet(viewsets.ModelViewSet):
             job_description=report.job_description,
             company_name=str(request.data.get('company_name') or '').strip(),
             hiring_manager=str(request.data.get('hiring_manager') or '').strip(),
+            candidate_name=str(request.data.get('candidate_name') or '').strip(),
             tone=str(request.data.get('tone') or 'professional').strip(),
             length=str(request.data.get('length') or 'standard').strip(),
             focus_keywords=[

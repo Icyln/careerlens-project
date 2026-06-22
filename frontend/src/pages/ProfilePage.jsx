@@ -113,7 +113,7 @@ function InfoCard({ icon: Icon, label, value, helper }) {
         </p>
       </div>
 
-      <p className="break-words text-sm font-black text-[#111439] sm:text-base">
+      <p className="break-words text-sm font-bold text-[#111439] sm:text-base">
         {value || 'Not provided'}
       </p>
 
@@ -268,7 +268,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="relative z-0 min-h-screen pb-12 font-['CoFo_Sans',_Inter,_sans-serif] text-[#111439] selection:bg-[#0FFCBE]/30">
+    <div className="relative z-0 min-h-screen pb-12 font-['Inter',_ui-sans-serif,_system-ui,_sans-serif] text-[#111439] selection:bg-[#0FFCBE]/30">
       <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[520px] w-full max-w-[860px] -translate-x-1/2 rounded-full bg-gradient-to-br from-[#106EBE]/10 to-[#0FFCBE]/10 blur-[120px]" />
 
       <section className="overflow-hidden rounded-[2rem] border border-white/80 bg-white/75 shadow-xl shadow-[#111439]/5 backdrop-blur-2xl">
@@ -278,16 +278,16 @@ export default function ProfilePage() {
 
           <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white px-4 py-2 text-xs font-black uppercase tracking-widest text-[#111439] shadow-sm">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-[#111439] shadow-sm">
                 <Sparkles size={14} className="text-[#106EBE]" />
                 CareerLens Profile
               </div>
 
-              <h1 className="max-w-3xl text-2xl font-black tracking-tight sm:text-4xl">
+              <h1 className="max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
                 Your career workspace identity
               </h1>
 
-              <p className="mt-4 max-w-2xl text-sm font-medium leading-7 text-white/80 sm:text-base">
+              <p className="mt-4 max-w-2xl text-md font-medium leading-7 text-white/80 sm:text-base">
                 Manage your account identity, access role, profile details, and quick routes across your CareerLens workflow.
               </p>
             </div>
@@ -321,7 +321,7 @@ export default function ProfilePage() {
                   Signed in as
                 </p>
 
-                <h2 className="mt-1 break-words text-3xl font-black text-[#111439]">
+                <h2 className="mt-1 break-words text-3xl font-bold text-[#111439]">
                   {username}
                 </h2>
 
@@ -375,7 +375,7 @@ export default function ProfilePage() {
                   <p className="text-xs font-black uppercase tracking-widest text-[#111439]/45">
                     Account access
                   </p>
-                  <h3 className="text-xl font-black text-[#111439]">{roleLabel}</h3>
+                  <h3 className="text-xl font-bold text-[#111439]">{roleLabel}</h3>
                 </div>
               </div>
 
@@ -431,8 +431,8 @@ export default function ProfilePage() {
               <p className="text-xs font-black uppercase tracking-widest text-[#106EBE]">
                 Profile details
               </p>
-              <h2 className="mt-2 text-2xl font-black text-[#111439]">
-                {isEditing ? 'Edit your account information.' : 'Account information.'}
+              <h2 className="mt-2 text-2xl font-semibold text-[#111439]">
+                {isEditing ? 'Edit your account information.' : 'Account Information'}
               </h2>
               <p className="mt-2 text-sm font-semibold leading-7 text-[#111439]/55">
                 Update your username, name, and email address used across CareerLens.
@@ -542,8 +542,8 @@ export default function ProfilePage() {
               <p className="text-xs font-black uppercase tracking-widest text-[#106EBE]">
                 Security overview
               </p>
-              <h2 className="mt-2 text-2xl font-black text-[#111439]">
-                Your data is scoped to your account.
+              <h2 className="mt-2 text-2xl font-semibold text-[#111439]">
+                Your data is scoped to your account
               </h2>
             </div>
 
@@ -557,7 +557,7 @@ export default function ProfilePage() {
               <div className="flex items-start gap-3">
                 <ShieldCheck className="mt-0.5 shrink-0 text-[#0A6F5A]" size={18} />
                 <div>
-                  <p className="text-sm font-black text-[#111439]">JWT protected access</p>
+                  <p className="text-sm font-bold text-[#111439]">JWT protected access</p>
                   <p className="mt-1 text-xs font-semibold leading-5 text-[#111439]/55">
                     Protected pages require an authenticated session before loading resumes, reports, dashboard data, jobs, and applications.
                   </p>
@@ -569,7 +569,7 @@ export default function ProfilePage() {
               <div className="flex items-start gap-3">
                 <LockKeyhole className="mt-0.5 shrink-0 text-[#106EBE]" size={18} />
                 <div>
-                  <p className="text-sm font-black text-[#111439]">Private workspace</p>
+                  <p className="text-sm font-bold text-[#111439]">Private workspace</p>
                   <p className="mt-1 text-xs font-semibold leading-5 text-[#111439]/55">
                     Normal users only see their own uploaded resumes, ATS reports, tailored resume workflow, and job applications.
                   </p>
@@ -581,7 +581,7 @@ export default function ProfilePage() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 shrink-0 text-[#0A6F5A]" size={18} />
                 <div>
-                  <p className="text-sm font-black text-[#111439]">Editable profile</p>
+                  <p className="text-sm font-bold text-[#111439]">Editable profile</p>
                   <p className="mt-1 text-xs font-semibold leading-5 text-[#111439]/55">
                     Users can update profile details while account role and protected access remain controlled by the backend.
                   </p>
@@ -597,8 +597,8 @@ export default function ProfilePage() {
           <p className="text-xs font-black uppercase tracking-widest text-[#106EBE]">
             Quick workspace
           </p>
-          <h2 className="mt-2 text-2xl font-black text-[#111439]">
-            Continue your job-search workflow.
+          <h2 className="mt-2 text-2xl font-semibold text-[#111439]">
+            Continue your job-search workflow
           </h2>
           <p className="mt-2 text-sm font-semibold leading-7 text-[#111439]/55">
             Jump into the main CareerLens tools from your profile page.

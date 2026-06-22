@@ -28,6 +28,7 @@ DEFAULT_COVER_LETTER_RESULT: dict[str, Any] = {
     'missing_info': [],
     'safety_notes': [],
     'next_steps': [],
+    'candidate_name': '',
     'word_count': 0,
     'message': '',
 }
@@ -113,14 +114,217 @@ def _strip_json_code_fence(text: str) -> str:
     return text
 
 
-def _merge_result(payload: dict[str, Any], status: str = 'success') -> dict[str, Any]:
+def _format_candidate_name(name: str) -> str:
+    name = _clean_string(name)
+
+    if not name:
+        return ''
+
+    # Convert resume names like "HTUN MYAT HTUN" to "Htun Myat Htun".
+    if name.isupper():
+        return name.title()
+
+    return name
+
+
+def _extract_candidate_name(resume_text: str) -> str:
+    text = resume_text or ''
+
+    # First check explicit labels like "Name: Natasha Gupta".
+    label_match = re.search(
+        r'(?im)^\s*(?:name|full name)\s*[:\-]\s*([A-Za-z][A-Za-z\s.\'-]{2,60})\s*$',
+        text,
+    )
+
+    if label_match:
+        candidate = re.sub(r'[^A-Za-z .\'-]', '', label_match.group(1)).strip()
+        words = candidate.split()
+
+        if 2 <= len(words) <= 5:
+            return _format_candidate_name(candidate)
+
+    lines = [
+        _clean_string(line)
+        for line in text.splitlines()
+        if _clean_string(line)
+    ]
+
+    bad_words = {
+        'resume',
+        'curriculum vitae',
+        'cv',
+        'email',
+        'phone',
+        'address',
+        'linkedin',
+        'github',
+        'portfolio',
+        'summary',
+        'profile',
+        'experience',
+        'education',
+        'skills',
+        'certifications',
+        'projects',
+        'objective',
+        'developer',
+        'engineer',
+        'server',
+        'assistant',
+        'manager',
+        'designer',
+        'technician',
+        'specialist',
+        'student',
+        'intern',
+    }
+
+    for line in lines[:15]:
+        # If contact info is on the same line, take only the first segment.
+        first_part = re.split(r'\s*[|•]\s*', line)[0].strip()
+        clean = re.sub(r'[^A-Za-z .\'-]', '', first_part).strip()
+        words = clean.split()
+
+        if not (2 <= len(words) <= 5):
+            continue
+
+        lower = clean.lower()
+
+        if any(word in lower for word in bad_words):
+            continue
+
+        if '@' in line or 'http' in lower or 'www.' in lower:
+            continue
+
+        if re.search(r'\d', line):
+            continue
+
+        # Accept Title Case or ALL CAPS names.
+        if all(word[:1].isupper() for word in words if word):
+            return _format_candidate_name(clean)
+
+    return ''
+
+
+def _clean_subject_line(subject_line: str, candidate_name: str = '') -> str:
+    subject_line = _clean_string(subject_line)
+    candidate_name = _format_candidate_name(candidate_name)
+
+    if not subject_line:
+        return ''
+
+    # Remove placeholder names from subject lines.
+    subject_line = re.sub(
+        r'\s*[-–—|:]\s*\[(?:your name|candidate name|name)\]\s*',
+        '',
+        subject_line,
+        flags=re.IGNORECASE,
+    )
+
+    subject_line = re.sub(
+        r'\[(?:your name|candidate name|name)\]',
+        '',
+        subject_line,
+        flags=re.IGNORECASE,
+    )
+
+    # If Gemini adds the candidate name at the end of the subject, remove it.
+    # Example: "Application for Server Position - Htun Myat Htun"
+    if candidate_name:
+        subject_line = re.sub(
+            rf'\s*[-–—|:]\s*{re.escape(candidate_name)}\s*$',
+            '',
+            subject_line,
+            flags=re.IGNORECASE,
+        )
+
+    subject_line = re.sub(r'\s{2,}', ' ', subject_line).strip()
+    subject_line = re.sub(r'\s*[-–—|:]\s*$', '', subject_line).strip()
+
+    return subject_line
+
+
+def _ensure_signature_name(cover_letter: str, candidate_name: str) -> str:
+    cover_letter = _clean_multiline(cover_letter)
+    candidate_name = _format_candidate_name(candidate_name)
+
+    if not cover_letter:
+        return cover_letter
+
+    if candidate_name:
+        cover_letter = re.sub(
+            r'\[(?:your name|candidate name|name)\]',
+            candidate_name,
+            cover_letter,
+            flags=re.IGNORECASE,
+        )
+    else:
+        cover_letter = re.sub(
+            r'\[(?:your name|candidate name|name)\]',
+            '',
+            cover_letter,
+            flags=re.IGNORECASE,
+        )
+
+    closing_pattern = r'(?:best regards|kind regards|sincerely|regards)'
+
+    if candidate_name:
+        cover_letter = re.sub(
+            rf'\s*{closing_pattern},?\s+{re.escape(candidate_name)}\s*$',
+            '',
+            cover_letter,
+            flags=re.IGNORECASE,
+        )
+    else:
+        # If we do not have a candidate name, remove any ending signature-like text.
+        cover_letter = re.sub(
+            rf'\s*{closing_pattern},?\s*(?:[A-Za-z][A-Za-z\s.\'-]{{2,60}})?\s*$',
+            '',
+            cover_letter,
+            flags=re.IGNORECASE,
+        )
+
+    # Remove leftover ending closings like "Sincerely,".
+    cover_letter = re.sub(
+        rf'\s*{closing_pattern},?\s*$',
+        '',
+        cover_letter,
+        flags=re.IGNORECASE,
+    )
+
+    cover_letter = _clean_multiline(cover_letter)
+
+    if candidate_name:
+        return f'{cover_letter}\n\nSincerely,\n{candidate_name}'.strip()
+
+    return f'{cover_letter}\n\nSincerely,'.strip()
+
+
+def _merge_result(
+    payload: dict[str, Any],
+    status: str = 'success',
+    candidate_name: str = '',
+) -> dict[str, Any]:
     result = json.loads(json.dumps(DEFAULT_COVER_LETTER_RESULT))
     result.update(payload or {})
 
+    clean_candidate_name = (
+        _format_candidate_name(result.get('candidate_name'))
+        or _format_candidate_name(candidate_name)
+    )
+
     result['engine'] = 'gemini_cover_letter'
     result['status'] = status
-    result['subject_line'] = _clean_string(result.get('subject_line'))
+    result['subject_line'] = _clean_subject_line(
+        result.get('subject_line'),
+        clean_candidate_name,
+    )
+    result['candidate_name'] = clean_candidate_name
     result['cover_letter'] = _clean_multiline(result.get('cover_letter'))
+    result['cover_letter'] = _ensure_signature_name(
+        result['cover_letter'],
+        clean_candidate_name,
+    )
     result['opening_hook'] = _clean_string(result.get('opening_hook'))
     result['highlighted_strengths'] = _listify(result.get('highlighted_strengths'))
     result['keywords_used'] = _listify(result.get('keywords_used'))
@@ -152,7 +356,6 @@ def _is_quota_or_rate_error(error: Exception) -> bool:
 def _safe_keywords(focus_keywords: list[str] | None, job_description: str) -> list[str]:
     keywords = _listify(focus_keywords)
 
-    # Add a few safe common role keywords only if they appear in the job description.
     common_terms = [
         'customer service',
         'communication',
@@ -179,46 +382,6 @@ def _safe_keywords(focus_keywords: list[str] | None, job_description: str) -> li
 
     return keywords[:8]
 
-def _extract_candidate_name(resume_text: str) -> str:
-    lines = [
-        _clean_string(line)
-        for line in (resume_text or '').splitlines()
-        if _clean_string(line)
-    ]
-
-    bad_words = {
-        'resume',
-        'curriculum vitae',
-        'cv',
-        'email',
-        'phone',
-        'address',
-        'linkedin',
-        'github',
-        'portfolio',
-        'summary',
-        'profile',
-        'experience',
-        'education',
-        'skills',
-    }
-
-    for line in lines[:12]:
-        clean = re.sub(r'[^A-Za-z .\'-]', '', line).strip()
-        words = clean.split()
-
-        if not (2 <= len(words) <= 5):
-            continue
-
-        lower = clean.lower()
-
-        if any(word in lower for word in bad_words):
-            continue
-
-        if all(word[:1].isupper() for word in words if word):
-            return clean
-
-    return ''
 
 def _fallback_cover_letter(
     *,
@@ -237,9 +400,9 @@ def _fallback_cover_letter(
     clean_job_title = _clean_string(job_title) or 'the role'
     clean_company = _clean_string(company_name)
     clean_manager = _clean_string(hiring_manager)
-    clean_candidate_name = _clean_string(candidate_name) or _extract_candidate_name(resume_text)
-    signature = f'Sincerely,\n{clean_candidate_name}' if clean_candidate_name else 'Sincerely,'
+    clean_candidate_name = _format_candidate_name(candidate_name) or _extract_candidate_name(resume_text)
 
+    signature = f'Sincerely,\n{clean_candidate_name}' if clean_candidate_name else 'Sincerely,'
     greeting = f'Dear {clean_manager},' if clean_manager else 'Dear Hiring Manager,'
 
     company_phrase = f' at {clean_company}' if clean_company else ''
@@ -247,7 +410,6 @@ def _fallback_cover_letter(
 
     keywords = _safe_keywords(focus_keywords, job_description)
 
-    keyword_sentence = ''
     if keywords:
         keyword_sentence = (
             'The role appears to value '
@@ -269,7 +431,7 @@ I am writing to express my interest in the {clean_job_title} position{company_ph
 
 Thank you for considering my application. I would appreciate the opportunity to discuss how my experience can support the needs of this role.
 
-Sincerely,"""
+{signature}"""
     else:
         body = f"""{greeting}
 
@@ -281,13 +443,14 @@ In my previous experience, I have developed a strong sense of responsibility, at
 
 Thank you for considering my application. I would welcome the opportunity to discuss how my background and motivation can support the needs of this position.
 
-Sincerely,"""
+{signature}"""
 
     return _merge_result(
         {
             'subject_line': f'Application for {clean_job_title}{subject_company}',
             'opening_hook': f'I am writing to express my interest in the {clean_job_title} position{company_phrase}.',
             'cover_letter': body,
+            'candidate_name': clean_candidate_name,
             'highlighted_strengths': [
                 'Generated using a safe fallback draft because Gemini was unavailable.',
                 'Uses the selected job title and company details when provided.',
@@ -312,6 +475,7 @@ Sincerely,"""
             'message': message or 'Gemini was unavailable, so CareerLens created a safe fallback cover letter draft.',
         },
         status='fallback',
+        candidate_name=clean_candidate_name,
     )
 
 
@@ -336,7 +500,8 @@ def _build_prompt(
         'detailed': 'Write 360-450 words, 4-5 paragraphs.',
     }.get(length, 'Write 260-340 words, 4 concise paragraphs.')
 
-    candidate_name = _clean_string(candidate_name) or _extract_candidate_name(resume_text)
+    candidate_name = _format_candidate_name(candidate_name) or _extract_candidate_name(resume_text)
+    required_signature = f'Sincerely,\n{candidate_name}' if candidate_name else 'Sincerely,'
 
     return f"""
 You are CareerLens Cover Letter Writer. Generate a truthful, recruiter-ready cover letter using only the candidate resume and the job description.
@@ -345,7 +510,7 @@ Critical safety rules:
 - Do not invent experience, employers, degrees, certifications, years of experience, tools, achievements, awards, or metrics.
 - If a detail is not clearly supported by the resume, do not claim it as fact.
 - You may phrase transferable experience professionally, but it must remain truthful.
-- Do not include placeholders such as [Company] or [Hiring Manager].
+- Do not include placeholders such as [Company], [Hiring Manager], [Your Name], or [Candidate Name].
 - If company or hiring manager is missing, write naturally without placeholders.
 - Avoid generic AI-sounding phrases.
 - Make it specific, polished, and human.
@@ -354,13 +519,16 @@ Critical safety rules:
 - The cover_letter must start with a greeting.
 - If a hiring manager name is provided, start with: Dear {hiring_manager},
 - If no hiring manager name is provided, start exactly with: Dear Hiring Manager,
-- The cover_letter must end with a professional signature.
+- The cover_letter must end with a professional signature on separate lines.
 - If the candidate name is clearly available, end exactly with:
   Sincerely,
   {candidate_name}
 - If the candidate name is not clearly available, end with:
   Sincerely,
+- Never place "Sincerely" inside the last paragraph.
+- Never write "Sincerely, {candidate_name}" on one line.
 - Do not invent a candidate name.
+- Do not include the candidate name in the subject_line.
 
 Return only valid JSON with exactly these keys:
 - subject_line: short email subject for sending the cover letter.
@@ -371,6 +539,7 @@ Return only valid JSON with exactly these keys:
 - missing_info: array of useful missing details the candidate may want to add manually.
 - safety_notes: array of 2-4 short notes about truthfulness or review reminders.
 - next_steps: array of 2-4 practical follow-up actions.
+- candidate_name: the candidate name extracted from the resume, or empty string if unavailable.
 
 Style:
 Tone: {tone}
@@ -382,7 +551,8 @@ Focus keywords requested by user: {', '.join(focus_keywords) if focus_keywords e
 User notes: {user_notes or 'None'}
 Candidate name from resume: {candidate_name or 'Not clearly found'}
 Required greeting: {'Dear ' + hiring_manager + ',' if hiring_manager else 'Dear Hiring Manager,'}
-Required signature: {f'Sincerely, {candidate_name}' if candidate_name else 'Sincerely,'}
+Required signature:
+{required_signature}
 
 Job description:
 {_truncate(job_description, MAX_JOB_DESCRIPTION_CHARS)}
@@ -399,18 +569,18 @@ def generate_cover_letter(
     job_description: str,
     company_name: str = '',
     hiring_manager: str = '',
+    candidate_name: str = '',
     tone: str = 'professional',
     length: str = 'standard',
     focus_keywords: list[str] | None = None,
     user_notes: str = '',
 ) -> dict[str, Any]:
-    
-    candidate_name = _extract_candidate_name(resume_text)
+    candidate_name = _format_candidate_name(candidate_name) or _extract_candidate_name(resume_text)
 
     api_key = (
-    getattr(settings, 'GEMINI_COVER_LETTER_API_KEY', '')
-    or getattr(settings, 'GEMINI_API_KEY', '')
-)
+        getattr(settings, 'GEMINI_COVER_LETTER_API_KEY', '')
+        or getattr(settings, 'GEMINI_API_KEY', '')
+    )
 
     if not api_key:
         return _fallback_cover_letter(
@@ -434,6 +604,7 @@ def generate_cover_letter(
             job_description=job_description,
             company_name=company_name,
             hiring_manager=hiring_manager,
+            candidate_name=candidate_name,
             tone=tone,
             length=length,
             focus_keywords=focus_keywords,
@@ -449,6 +620,7 @@ def generate_cover_letter(
 
     try:
         client = genai.Client(api_key=api_key)
+
         response = client.models.generate_content(
             model=model,
             contents=_build_prompt(
@@ -475,7 +647,11 @@ def generate_cover_letter(
         if not isinstance(payload, dict):
             raise ValueError('Gemini returned JSON that is not an object.')
 
-        return _merge_result(payload, status='success')
+        return _merge_result(
+            payload,
+            status='success',
+            candidate_name=candidate_name,
+        )
 
     except Exception as exc:
         if _is_quota_or_rate_error(exc):
@@ -489,6 +665,7 @@ def generate_cover_letter(
             job_description=job_description,
             company_name=company_name,
             hiring_manager=hiring_manager,
+            candidate_name=candidate_name,
             tone=tone,
             length=length,
             focus_keywords=focus_keywords,

@@ -31,7 +31,7 @@ const ADMIN_NAV_ITEM = { to: '/admin', label: 'Admin', icon: ShieldCheck };
 
 function navClass({ isActive }) {
   return [
-    'group inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-black transition-all duration-300',
+    'group inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-bold transition-all duration-300',
     isActive
       ? 'bg-gradient-to-tr from-[#106EBE] to-[#0FFCBE] text-white shadow-lg shadow-[#106EBE]/20'
       : 'text-[#111439]/60 hover:bg-white hover:text-[#111439] hover:shadow-sm',
@@ -90,7 +90,7 @@ export default function Layout({ children }) {
   );
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#F6F8FC] selection:bg-[#0FFCBE]/30">
+    <div className="min-h-screen overflow-x-hidden bg-[#F6F8FC] selection:bg-[#0FFCBE]/30 font-['Inter',_ui-sans-serif,_system-ui,_sans-serif]">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-[#106EBE]/10 blur-3xl" />
         <div className="absolute right-0 top-20 h-80 w-80 rounded-full bg-[#0FFCBE]/10 blur-3xl" />

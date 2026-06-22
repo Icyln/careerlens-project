@@ -1273,14 +1273,14 @@ async function handleGenerateCareerGuidance(event) {
 
       <header className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <div className="mb-3 inline-flex items-center gap-1.5 rounded-md border border-[#111439]/10 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#106EBE] shadow-sm">
+          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
             <BarChart3 size={12} />
             Command Center
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#111439]">
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[#111439]">
             Intelligence Dashboard
           </h1>
-          <p className="mt-1 text-sm text-[#111439]/60">
+          <p className="mt-2 text-sm text-[#111439]/60">
             {formatToday()} • Track resume readiness, ATS progress, applications, and next career actions.
           </p>
         </div>

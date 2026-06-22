@@ -79,6 +79,46 @@ function cleanFileName(value = 'cover_letter') {
     .slice(0, 80) || 'cover_letter';
 }
 
+function guessCandidateNameFromFileName(filename = '') {
+  const withoutExtension = String(filename || '')
+    .replace(/\.[^/.]+$/, '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const blocked = new Set([
+    'resume',
+    'cv',
+    'curriculum',
+    'vitae',
+    'cover',
+    'letter',
+    'final',
+    'updated',
+    'latest',
+    'new',
+    'copy',
+    'pdf',
+    'docx',
+    'doc',
+  ]);
+
+  const words = withoutExtension
+    .split(' ')
+    .map((word) => word.trim())
+    .filter(Boolean)
+    .filter((word) => !blocked.has(word.toLowerCase()))
+    .filter((word) => !/\d/.test(word));
+
+  if (words.length < 2 || words.length > 5) {
+    return '';
+  }
+
+  return words
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
 function splitCoverLetterParagraphs(text = '') {
   return String(text || '')
     .split(/\n{2,}/)
@@ -234,7 +274,7 @@ function toneClass(tone = 'slate') {
 
 function Pill({ children, tone = 'slate' }) {
   return (
-    <span className={`rounded-full px-3 py-1 text-[11px] font-black ring-1 ${toneClass(tone)}`}>
+    <span className={`rounded-full px-3 py-1 text-[12px] font-bold ring-1 ${toneClass(tone)}`}>
       {children}
     </span>
   );
@@ -247,7 +287,7 @@ function Field({ label, helper, children }) {
         {label}
       </span>
       <div className="mt-2.5">{children}</div>
-      {helper && <p className="mt-2 text-xs leading-5 text-[#111439]/45">{helper}</p>}
+      {helper && <p className="mt-2 text-sm leading-5 text-[#111439]/45">{helper}</p>}
     </label>
   );
 }
@@ -255,17 +295,17 @@ function Field({ label, helper, children }) {
 function PageHeader() {
   return (
     <section className="rounded-[2rem] border border-[#111439]/10 bg-white px-6 py-7 shadow-sm sm:px-8 sm:py-8">
-      <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-tr from-[#106EBE] to-[#0FFCBE] px-4 py-2 text-sm font-black text-white shadow-sm">
+      <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
         <MailCheck size={16} />
         Cover Letter Generator
       </div>
 
-      <h1 className="mt-6 max-w-4xl text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
-        Create a tailored cover letter from an ATS report.
+      <h1 className="mt-6 max-w-4xl text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+        Create a tailored cover letter from an ATS report
       </h1>
 
-      <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
-        Select a report, choose a tone, and generate a clean letter you can copy or download.
+      <p className="mt-5 max-w-3xl text-md leading-8 text-slate-600">
+        Select a report, choose a tone, and generate a clean letter you can copy or download
       </p>
     </section>
   );
@@ -287,7 +327,7 @@ function CompactReportCard({ selectedReport }) {
           </p>
           <div className="mt-1 flex items-center gap-2">
             <FileText size={13} className="text-[#111439]/40" />
-            <p className="truncate text-xs font-semibold text-[#111439]/50">
+            <p className="truncate text-sm font-bold text-[#111439]/50">
               {selectedReport.resume?.original_name || 'Selected resume'}
             </p>
           </div>
@@ -323,10 +363,10 @@ function TonePicker({ value, onChange }) {
             }`}>
               <Icon size={18} />
             </div>
-            <p className={`text-[15px] font-black ${active ? 'text-[#106EBE]' : 'text-[#111439]'}`}>
+            <p className={`text-[15px] font-semibold ${active ? 'text-[#106EBE]' : 'text-[#111439]'}`}>
               {tone.label}
             </p>
-            <p className={`mt-1.5 text-xs leading-relaxed ${active ? 'text-[#106EBE]/80' : 'text-[#111439]/50'}`}>
+            <p className={`mt-1.5 text-sm leading-relaxed ${active ? 'text-[#106EBE]/80' : 'text-[#111439]/50'}`}>
               {tone.helper}
             </p>
           </button>
@@ -353,8 +393,8 @@ function LengthPicker({ value, onChange }) {
                 : 'border-[#111439]/10 bg-white hover:border-[#111439]/25 hover:bg-[#F8F8F9] hover:shadow-sm'
             }`}
           >
-            <p className="text-[15px] font-black">{item.label}</p>
-            <p className={`mt-1.5 text-xs font-medium ${active ? 'text-white/70' : 'text-[#111439]/45'}`}>
+            <p className="text-[15px] font-semibold">{item.label}</p>
+            <p className={`mt-1.5 text-sm font-medium ${active ? 'text-white/70' : 'text-[#111439]/45'}`}>
               {item.helper}
             </p>
           </button>
@@ -371,7 +411,7 @@ function EmptyPreview() {
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#106EBE]/10 text-[#106EBE]">
           <MailCheck size={32} />
         </div>
-        <h3 className="mt-6 text-lg font-black text-[#111439]">Your cover letter will appear here</h3>
+        <h3 className="mt-6 text-lg font-bold text-[#111439]">Your cover letter will appear here</h3>
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#111439]/55">
           Use the settings above and run the generator to create a polished, truthful letter.
         </p>
@@ -388,70 +428,203 @@ function LetterPreview({ result, selectedReport, companyName = '', setMessage })
   const exportCompanyName = companyName || '';
   const exportText = `${subjectLine}\n\n${coverLetter}`;
 
+  const paragraphs = splitCoverLetterParagraphs(coverLetter);
+
+  const strengths = toArray(result?.highlighted_strengths)
+    .map((item) => toText(item, ''))
+    .filter(Boolean);
+
+  const keywords = toArray(result?.keywords_used)
+    .map((item) => toText(item, ''))
+    .filter(Boolean);
+
+  const reviewNotes = toArray(result?.safety_notes)
+    .map((item) => toText(item, ''))
+    .filter(Boolean);
+
+  const missingInfo = toArray(result?.missing_info)
+    .map((item) => toText(item, ''))
+    .filter(Boolean);
+
+  const qualityItems = [
+    {
+      label: 'Strengths Used',
+      value: strengths.length,
+      helper: strengths[0] || 'No strengths returned yet.',
+      icon: CheckCircle2,
+      tone: 'text-emerald-700 bg-emerald-50 ring-emerald-100',
+    },
+    {
+      label: 'Keywords included',
+      value: keywords.length,
+      helper: keywords.slice(0, 3).join(', ') || 'No keywords returned yet.',
+      icon: Sparkles,
+      tone: 'text-[#106EBE] bg-[#106EBE]/10 ring-[#106EBE]/15',
+    },
+    {
+      label: 'Review notes',
+      value: reviewNotes.length,
+      helper: reviewNotes[0] || 'No review notes returned yet.',
+      icon: ShieldCheck,
+      tone: 'text-amber-700 bg-amber-50 ring-amber-100',
+    },
+    {
+      label: 'Missing info',
+      value: missingInfo.length,
+      helper: missingInfo[0] || 'No missing details reported.',
+      icon: AlertTriangle,
+      tone: 'text-rose-700 bg-rose-50 ring-rose-100',
+    },
+  ];
+
   if (!coverLetter) return <EmptyPreview />;
 
   return (
-    <div className="rounded-[2rem] border border-[#111439]/10 bg-white shadow-sm">
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#111439]/5 p-6 sm:p-8">
-        <div className="min-w-0">
-          <p className="text-[11px] font-black uppercase tracking-widest text-[#106EBE]">
-            Generated letter
-          </p>
-          <h2 className="mt-2 truncate text-xl font-black text-[#111439] sm:text-2xl" title={subjectLine}>
-            {subjectLine}
-          </h2>
-          <p className="mt-1.5 text-sm font-semibold text-[#111439]/50">
-            {jobTitle} • {wordCount} words
-          </p>
-        </div>
+    <div className="overflow-hidden rounded-[2rem] border border-[#111439]/10 bg-white shadow-sm">
+      <div className="border-b border-[#111439]/5 bg-gradient-to-br from-white via-white to-[#F8F8F9] p-5 sm:p-6">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#106EBE]/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[#106EBE] ring-1 ring-[#106EBE]/15">
+              <MailCheck size={14} />
+              Generated letter
+            </div>
 
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => copyText(coverLetter, setMessage)}
-            className="inline-flex items-center gap-2 rounded-2xl border border-[#111439]/10 bg-white px-4 py-2.5 text-sm font-black text-[#111439] transition hover:bg-[#F8F8F9] hover:shadow-sm"
-          >
-            <Clipboard size={16} />
-            Copy
-          </button>
+            <h2
+              className="mt-4 max-w-3xl truncate text-2xl font-semibold tracking-tight text-[#111439] sm:text-3xl"
+              title={subjectLine}
+            >
+              {subjectLine}
+            </h2>
 
-          <button
-            type="button"
-            onClick={() =>
-              downloadCoverLetterPdf({
-                text: exportText,
-                jobTitle,
-                companyName: exportCompanyName,
-              })
-            }
-            className="inline-flex items-center gap-2 rounded-2xl bg-[#111439] px-4 py-2.5 text-sm font-black text-white shadow-md transition hover:bg-[#1f244f]"
-          >
-            <Download size={16} />
-            PDF
-          </button>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-[#111439]/55">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 ring-1 ring-[#111439]/10">
+                <Briefcase size={14} />
+                {jobTitle}
+              </span>
 
-          <button
-            type="button"
-            onClick={() =>
-              downloadCoverLetterDocx({
-                text: exportText,
-                jobTitle,
-                companyName: exportCompanyName,
-              })
-            }
-            className="inline-flex items-center gap-2 rounded-2xl border border-[#111439]/10 bg-white px-4 py-2.5 text-sm font-black text-[#111439] transition hover:bg-[#F8F8F9] hover:shadow-sm"
-          >
-            <FileText size={16} />
-            DOCX
-          </button>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 ring-1 ring-[#111439]/10">
+                <Building2 size={14} />
+                {exportCompanyName || 'Company not specified'}
+              </span>
+
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 ring-1 ring-[#111439]/10">
+                <FileText size={14} />
+                {wordCount} words
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => copyText(coverLetter, setMessage)}
+              className="inline-flex items-center gap-2 rounded-2xl border border-[#111439]/10 bg-white px-4 py-2.5 text-sm font-semibold text-[#111439] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#F8F8F9]"
+            >
+              <Clipboard size={16} />
+              Copy
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                downloadCoverLetterPdf({
+                  text: exportText,
+                  jobTitle,
+                  companyName: exportCompanyName,
+                })
+              }
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#111439] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#1f244f]"
+            >
+              <Download size={16} />
+              PDF
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                downloadCoverLetterDocx({
+                  text: exportText,
+                  jobTitle,
+                  companyName: exportCompanyName,
+                })
+              }
+              className="inline-flex items-center gap-2 rounded-2xl border border-[#111439]/10 bg-white px-4 py-2.5 text-sm font-semibold text-[#111439] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#F8F8F9]"
+            >
+              <FileText size={16} />
+              DOCX
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                downloadTextFile(
+                  exportText,
+                  `${cleanFileName(`${exportCompanyName || jobTitle}_cover_letter`)}.txt`
+                )
+              }
+              className="inline-flex items-center gap-2 rounded-2xl border border-[#111439]/10 bg-white px-4 py-2.5 text-sm font-semibold text-[#111439]/65 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#F8F8F9]"
+            >
+              TXT
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="p-6 sm:p-8">
-        <div className="mx-auto max-w-4xl rounded-[1.5rem] border border-[#111439]/5 bg-[#fbfcff] p-8 shadow-inner sm:p-10">
-          <p className="whitespace-pre-line text-[15px] leading-8 text-[#111439]/80">
-            {coverLetter}
-          </p>
+      <div className="bg-[#F8F8F9] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl rounded-[2rem] border border-[#111439]/10 bg-white p-6 shadow-xl shadow-[#111439]/5 sm:p-10 lg:p-12">
+          <div className="mb-8 border-b border-[#111439]/10 pb-5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#111439]/35">
+              Cover letter preview
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[#111439]/50">
+              Review the letter carefully before sending. Edit names, dates, and any company-specific details if needed.
+            </p>
+          </div>
+
+          <div className="max-h-[38rem] overflow-y-auto pr-1">
+            <div className="space-y-5 font-serif text-[15.5px] leading-8 text-[#111439]/85">
+              {paragraphs.map((paragraph, index) => (
+                <p
+                  key={`${paragraph.slice(0, 24)}-${index}`}
+                  className="text-justify"
+                  style={{ textAlign: 'justify' }}
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto mt-5 grid max-w-4xl gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {qualityItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <div
+                key={item.label}
+                className="rounded-2xl border border-[#111439]/10 bg-white p-4 shadow-sm"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-2xl ring-1 ${item.tone}`}>
+                    <Icon size={17} />
+                  </div>
+
+                  <span className="text-lg font-semibold text-[#111439]">
+                    {item.value}
+                  </span>
+                </div>
+
+                <p className="mt-3 text-[11px] font-semibold uppercase tracking-widest text-[#111439]/40">
+                  {item.label}
+                </p>
+
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#111439]/55">
+                  {item.helper}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -498,7 +671,7 @@ function InsightPanel({ result, activeInsight, setActiveInsight }) {
           <p className="text-[11px] font-black uppercase tracking-widest text-[#111439]/40">
             Letter quality check
           </p>
-          <h3 className="mt-1.5 text-xl font-black text-[#111439]">Review before submitting</h3>
+          <h3 className="mt-1.5 text-xl font-bold text-[#111439]">Review before submitting</h3>
         </div>
 
         <div className="flex gap-2 overflow-x-auto rounded-[1.25rem] border border-[#111439]/10 bg-[#F8F8F9] p-1.5">
@@ -511,7 +684,7 @@ function InsightPanel({ result, activeInsight, setActiveInsight }) {
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveInsight(tab.key)}
-                className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-sm font-black transition ${
+                className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
                   active
                     ? 'bg-white text-[#111439] shadow-sm'
                     : 'text-[#111439]/50 hover:bg-white/70 hover:text-[#111439]'
@@ -531,7 +704,7 @@ function InsightPanel({ result, activeInsight, setActiveInsight }) {
             <ActiveIcon size={20} />
           </div>
           <div>
-            <h4 className="text-base font-black text-[#111439]">{selectedGroup.title}</h4>
+            <h4 className="text-base font-semibold text-[#111439]">{selectedGroup.title}</h4>
             <p className="mt-0.5 text-sm font-semibold text-[#111439]/40">
               {safeItems.length} item{safeItems.length === 1 ? '' : 's'}
             </p>
@@ -617,9 +790,15 @@ export default function CoverLetterPage() {
     setMessage(null);
 
     try {
+      const candidateName =
+        selectedReport?.resume?.candidate_name ||
+        selectedReport?.resume?.name ||
+        guessCandidateNameFromFileName(selectedReport?.resume?.original_name);
+
       const data = await generateCoverLetter(selectedReportId, {
         company_name: form.company_name,
         hiring_manager: form.hiring_manager,
+        candidate_name: candidateName,
         tone: form.tone,
         length: form.length,
         focus_keywords: splitKeywords(form.focus_keywords),
@@ -644,7 +823,7 @@ export default function CoverLetterPage() {
   const keywords = splitKeywords(form.focus_keywords);
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8">
+    <div className="mx-auto max-w-[1400px] space-y-8 font-['Inter',_ui-sans-serif,_system-ui,_sans-serif]">
       <PageHeader />
 
       {message && <Alert type={message.type}>{message.text}</Alert>}
@@ -658,7 +837,7 @@ export default function CoverLetterPage() {
                 <p className="text-[11px] font-black uppercase tracking-widest text-[#106EBE]">
                   Settings
                 </p>
-                <h2 className="mt-1.5 text-2xl font-black text-[#111439]">Build your letter</h2>
+                <h2 className="mt-1.5 text-2xl font-bold text-[#111439]">Build your letter</h2>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#106EBE]/10 text-[#106EBE]">
                 <PenLine size={22} />
@@ -737,7 +916,7 @@ export default function CoverLetterPage() {
 
               {/* Optional Details Accordion */}
               <details className="group rounded-[1.5rem] border border-[#111439]/10 bg-[#F8F8F9] p-5 sm:p-6">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-black text-[#111439] outline-none">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-semibold text-[#111439] outline-none">
                   Advanced Details
                   <ChevronDown className="transition group-open:rotate-180" size={20} />
                 </summary>
@@ -789,7 +968,7 @@ export default function CoverLetterPage() {
                 <button
                   type="submit"
                   disabled={generating || !selectedReportId}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#106EBE] to-[#00D4B3] px-8 py-3.5 text-[15px] font-black text-white shadow-lg shadow-[#106EBE]/20 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#106EBE]/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-lg sm:w-auto"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-400 px-8 py-3.5 text-[15px] font-black text-white shadow-lg shadow-[#106EBE]/20 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#106EBE]/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-lg sm:w-auto"
                 >
                   {generating ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
                   {generating ? 'Generating...' : result ? 'Regenerate letter' : 'Generate letter'}

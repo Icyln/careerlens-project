@@ -211,7 +211,7 @@ function MiniStat({ label, value, tone = 'slate' }) {
   return (
     <div className={`rounded-2xl px-4 py-3 ring-1 ${toneClass}`}>
       <p className="text-[10px] font-black uppercase tracking-[0.18em] opacity-70">{label}</p>
-      <p className="mt-1 text-2xl font-black">{value}</p>
+      <p className="mt-1 text-2xl font-semibold">{value}</p>
     </div>
   );
 }
@@ -226,7 +226,7 @@ function KeywordPill({ children, tone = 'slate' }) {
         : 'bg-slate-50 text-slate-700 ring-slate-200';
 
   return (
-    <span className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-black ring-1 ${toneClass}`}>
+    <span className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${toneClass}`}>
       {children}
     </span>
   );
@@ -243,11 +243,11 @@ function TailoringAuditPanel({ tailored }) {
     <div className="rounded-3xl bg-white p-5 ring-1 ring-slate-200 shadow-sm">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-violet-700 ring-1 ring-violet-100">
+          <div className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-violet-700 ring-1 ring-violet-100">
             <ShieldCheck size={14} />
             Tailoring safety summary
           </div>
-          <h3 className="mt-3 text-xl font-black text-slate-950">Keyword review and safety notes</h3>
+          <h3 className="mt-3 text-xl font-bold text-slate-950">Keyword review and safety notes</h3>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
             This keeps the generated resume reviewable without making the page too long. Included items are confirmed by you. Skipped items are not added unless you explicitly support them with real experience.
           </p>
@@ -262,7 +262,7 @@ function TailoringAuditPanel({ tailored }) {
 
       <div className="mt-5 grid gap-4 xl:grid-cols-[0.32fr_0.38fr_0.30fr]">
         <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-          <h4 className="text-xs font-black uppercase tracking-[0.18em] text-emerald-700">Included confirmed keywords</h4>
+          <h4 className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Included confirmed keywords</h4>
           <div className="mt-3 flex max-h-40 flex-wrap gap-2 overflow-y-auto pr-1">
             {included.length ? (
               included.map((item, index) => <KeywordPill key={`included-${index}-${item}`} tone="emerald">{item}</KeywordPill>)
@@ -273,12 +273,12 @@ function TailoringAuditPanel({ tailored }) {
         </div>
 
         <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-          <h4 className="text-xs font-black uppercase tracking-[0.18em] text-rose-700">Skipped / unconfirmed keywords</h4>
+          <h4 className="text-xs font-bold uppercase tracking-[0.18em] text-rose-700">Skipped / unconfirmed keywords</h4>
           <div className="mt-3 max-h-52 space-y-2 overflow-y-auto pr-1">
             {skipped.length ? (
               skipped.map((item, index) => (
                 <div key={`skipped-${index}-${item.name}`} className="rounded-2xl bg-white p-3 ring-1 ring-rose-100">
-                  <p className="text-sm font-black text-slate-800">{item.name}</p>
+                  <p className="text-sm font-semibold text-slate-800">{item.name}</p>
                   {item.detail && <p className="mt-1 text-xs leading-5 text-slate-500">{item.detail}</p>}
                 </div>
               ))
@@ -289,7 +289,7 @@ function TailoringAuditPanel({ tailored }) {
         </div>
 
         <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-          <h4 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-slate-500">
+          <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
             <AlertTriangle size={15} /> Review notes
           </h4>
           <div className="mt-3 max-h-52 space-y-2 overflow-y-auto pr-1">
@@ -899,7 +899,7 @@ function ReportSelector({ reports, selectedReportId, setSelectedReportId }) {
 
   return (
     <div className="rounded-3xl bg-white p-5 ring-1 ring-slate-200">
-      <label htmlFor="report-select" className="text-sm font-black text-slate-950">Choose ATS report</label>
+      <label htmlFor="report-select" className="text-sm font-bold text-slate-950">Choose ATS report</label>
       <select
         id="report-select"
         value={selectedReportId || ''}
@@ -920,7 +920,7 @@ function ReportSelector({ reports, selectedReportId, setSelectedReportId }) {
 function TemplatePicker({ selectedTemplate, setSelectedTemplate }) {
   return (
     <div className="rounded-3xl bg-white p-5 ring-1 ring-slate-200">
-      <h3 className="flex items-center gap-2 text-lg font-black text-slate-950"><LayoutTemplate size={20} /> Choose template</h3>
+      <h3 className="flex items-center gap-2 text-lg font-bold text-slate-950"><LayoutTemplate size={20} /> Choose Template</h3>
       <div className="mt-4 grid gap-3">
         {TEMPLATES.map((template) => {
           const active = selectedTemplate === template.key;
@@ -932,8 +932,8 @@ function TemplatePicker({ selectedTemplate, setSelectedTemplate }) {
               className={`rounded-2xl p-4 text-left ring-1 transition ${active ? 'bg-violet-50 ring-violet-200' : 'bg-slate-50 ring-slate-200 hover:bg-white'}`}
             >
               <div className="flex items-center justify-between gap-3">
-                <p className="font-black text-slate-950">{template.name}</p>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-violet-700 ring-1 ring-violet-100">{template.tag}</span>
+                <p className="font-semibold text-slate-950">{template.name}</p>
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-violet-700 ring-1 ring-violet-100">{template.tag}</span>
               </div>
               <p className="mt-2 text-sm leading-6 text-slate-500">{template.description}</p>
             </button>
@@ -964,7 +964,7 @@ function KeywordConfirmPanel({ groups, selectedKeywords, setSelectedKeywords }) 
 
   return (
     <div className="rounded-3xl bg-white p-5 ring-1 ring-slate-200">
-      <h3 className="flex items-center gap-2 text-lg font-black text-slate-950"><ShieldCheck size={20} /> Confirm truthful ATS keywords</h3>
+      <h3 className="flex items-center gap-2 text-lg font-bold text-slate-950"><ShieldCheck size={20} /> Confirm truthful ATS keywords</h3>
       <p className="mt-2 text-sm leading-6 text-slate-500">
         CareerLens found these missing exact ATS keywords. Select only the keywords that truthfully describe your experience, education, or skills. AI will not add unselected keywords.
       </p>
@@ -1131,12 +1131,9 @@ function ResumeEditor({ fields, setFields }) {
       <div className="border-b border-slate-100 p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h3 className="flex items-center gap-2 text-lg font-black text-slate-950">
+            <h3 className="flex items-center gap-2 text-lg font-bold text-slate-950">
               <FileText size={20} /> Live editor
             </h3>
-            <p className="mt-2 text-sm leading-6 text-slate-500">
-              Edit one section at a time so the page stays short. The preview updates live.
-            </p>
           </div>
           <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-black text-violet-700 ring-1 ring-violet-100">
             {active.label}
@@ -1157,7 +1154,7 @@ function ResumeEditor({ fields, setFields }) {
                     : 'bg-slate-50 text-slate-600 ring-slate-200 hover:bg-white hover:text-slate-950'
                 }`}
               >
-                <span className="block text-xs font-black uppercase tracking-wide">{section.label}</span>
+                <span className="block text-xs font-bold uppercase tracking-wide">{section.label}</span>
                 <span className={`mt-1 block text-[11px] font-bold ${activeTab ? 'text-white/70' : 'text-slate-400'}`}>
                   {section.count} item{section.count === 1 ? '' : 's'}
                 </span>
@@ -1555,18 +1552,18 @@ export default function TailorResumePage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-['Inter',_ui-sans-serif,_system-ui,_sans-serif]">
       <section className="glass-panel rounded-[2rem] p-7 sm:p-10">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-4 py-2 text-sm font-black text-violet-700 ring-1 ring-violet-100">
+            <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
               <WandSparkles size={16} />
               Tailor Your Resume
             </div>
-            <h1 className="mt-6 max-w-4xl text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+            <h1 className="mt-6 max-w-4xl text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
               Choose a CV template, confirm truthful ATS keywords, and let AI tailor your resume safely.
             </h1>
-            <p className="mt-5 max-w-4xl text-lg leading-8 text-slate-600">
+            <p className="mt-5 max-w-4xl text-md leading-8 text-slate-600">
               CareerLens uses Gemini to rewrite only with user-confirmed, truthful keywords. AI does not change the ATS score and does not preserve the original PDF design exactly.
             </p>
           </div>
@@ -1590,8 +1587,8 @@ export default function TailorResumePage() {
 
           <label className="flex cursor-pointer gap-3 rounded-3xl bg-white p-5 ring-1 ring-slate-200">
             <input type="checkbox" checked={truthConfirmed} onChange={(event) => setTruthConfirmed(event.target.checked)} className="mt-1 h-5 w-5 accent-violet-600" />
-            <span className="text-sm font-bold leading-6 text-slate-700">
-              I confirm that the selected skills, tools, education, experience, and keywords are truthful and supported by my background.
+            <span className="text-sm text-justify font-bold leading-6 text-slate-700">
+              I confirm that the selected hard skills, soft skills, tools, education, experience, and keywords are truthful for my background.
             </span>
           </label>
 
@@ -1599,25 +1596,25 @@ export default function TailorResumePage() {
             type="button"
             onClick={handleTailor}
             disabled={tailoring || !selectedReport?.id || !truthConfirmed}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-600 px-6 py-4 text-sm font-black text-white shadow-lg shadow-violet-600/20 transition hover:-translate-y-0.5 hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-400 px-6 py-4 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
           >
             {tailoring ? <Loader2 className="animate-spin" size={18} /> : <WandSparkles size={18} />}
-            {tailoring ? 'Generating tailored resume...' : `Generate AI Tailored Resume${selectedTotal ? ` (${selectedTotal} confirmed)` : ''}`}
+            {tailoring ? 'Generating tailored resume...' : `Generate Tailored Resume${selectedTotal ? ` (${selectedTotal} confirmed)` : ''}`}
           </button>
         </div>
 
         <div className="space-y-6">
           {selectedReport && (
             <div className="rounded-3xl bg-slate-950 p-5 text-white shadow-2xl shadow-slate-950/20">
-              <p className="text-sm font-black uppercase tracking-wide text-violet-200">Selected ATS report</p>
-              <h2 className="mt-2 text-2xl font-black">{toText(selectedReport.job_title, 'Target role')}</h2>
+              <p className="text-sm font-semibold uppercase tracking-wide text-violet-200">Selected ATS report</p>
+              <h2 className="mt-2 text-2xl font-bold">{toText(selectedReport.job_title, 'Target role')}</h2>
               <p className="mt-2 text-sm text-slate-300">{selectedReport.resume?.original_name || 'Resume'} - {formatDateTime(selectedReport.created_at)}</p>
             </div>
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-5 ring-1 ring-slate-200">
             <div>
-              <h3 className="flex items-center gap-2 text-lg font-black text-slate-950"><CheckCircle2 size={20} /> Review, edit, and export</h3>
+              <h3 className="flex items-center gap-2 text-lg font-bold text-slate-950"><CheckCircle2 size={20} /> Review, edit, and export</h3>
               <p className="mt-1 text-sm text-slate-500">Left side editor updates the selected CV template preview live.</p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -1630,7 +1627,7 @@ export default function TailorResumePage() {
               >
                 <Download size={14} /> DOCX
               </button>
-              <button type="button" onClick={() => exportPreviewPdf(previewRef.current, setMessage)} disabled={!plainText} className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-3 py-2 text-xs font-black text-white hover:bg-violet-700 disabled:opacity-40"><Download size={14} /> PDF</button>
+              <button type="button" onClick={() => exportPreviewPdf(previewRef.current, setMessage)} disabled={!plainText} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-400 px-3 py-2 text-xs font-black text-white disabled:opacity-40"><Download size={14} /> PDF</button>
             </div>
           </div>
 
@@ -1646,8 +1643,7 @@ export default function TailorResumePage() {
                 <ResumeEditor fields={fields} setFields={setFields} />
                 <div className="self-start rounded-3xl bg-slate-100 p-4 ring-1 ring-slate-200 2xl:sticky 2xl:top-24">
                   <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                    <h3 className="flex items-center gap-2 text-lg font-black text-slate-950"><LayoutTemplate size={20} /> Live CV preview</h3>
-                    <span className="text-xs font-black uppercase tracking-wide text-slate-400">Scroll inside preview</span>
+                    <h3 className="flex items-center gap-2 text-lg font-bold text-slate-950"><LayoutTemplate size={20} /> Live CV preview</h3>
                   </div>
                   <div className="max-h-[82vh] overflow-auto rounded-2xl bg-white p-2">
                     <div className="min-w-[794px]">
