@@ -141,12 +141,63 @@ MAX_RESUME_UPLOAD_MB = int(os.getenv('MAX_RESUME_UPLOAD_MB', '8'))
 DATA_UPLOAD_MAX_MEMORY_SIZE = MAX_RESUME_UPLOAD_MB * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = MAX_RESUME_UPLOAD_MB * 1024 * 1024
 
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+def env_int(name: str, default: int) -> int:
+    try:
+        return int(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
+def unique_env_values(values: list[str]) -> list[str]:
+    output: list[str] = []
+
+    for value in values:
+        clean = str(value or '').strip()
+
+        if clean and clean not in output:
+            output.append(clean)
+
+    return output
+
+
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '').strip()
+GEMINI_API_KEY_2 = os.getenv('GEMINI_API_KEY_2', '').strip()
+GEMINI_API_KEY_3 = os.getenv('GEMINI_API_KEY_3', '').strip()
+
+GEMINI_API_KEYS = unique_env_values(
+    env_list('GEMINI_API_KEYS')
+    + [GEMINI_API_KEY, GEMINI_API_KEY_2, GEMINI_API_KEY_3]
+)
+
+GEMINI_API_KEY = GEMINI_API_KEYS[0] if GEMINI_API_KEYS else ''
+GEMINI_RETRY_ATTEMPTS = max(1, env_int('GEMINI_RETRY_ATTEMPTS', 1))
+GEMINI_KEY_SWITCH_DELAY_SECONDS = max(0, env_int('GEMINI_KEY_SWITCH_DELAY_SECONDS', 2))
 GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash-lite')
+
 
 GEMINI_COVER_LETTER_API_KEY = os.getenv(
     'GEMINI_COVER_LETTER_API_KEY',
     GEMINI_API_KEY,
+).strip()
+
+GEMINI_COVER_LETTER_API_KEY_2 = os.getenv(
+    'GEMINI_COVER_LETTER_API_KEY_2',
+    GEMINI_API_KEY_2,
+).strip()
+
+GEMINI_COVER_LETTER_API_KEY_3 = os.getenv(
+    'GEMINI_COVER_LETTER_API_KEY_3',
+    GEMINI_API_KEY_3,
+).strip()
+
+GEMINI_COVER_LETTER_API_KEYS = unique_env_values(
+    env_list('GEMINI_COVER_LETTER_API_KEYS')
+    + [
+        GEMINI_COVER_LETTER_API_KEY,
+        GEMINI_COVER_LETTER_API_KEY_2,
+        GEMINI_COVER_LETTER_API_KEY_3,
+        *GEMINI_API_KEYS,
+    ]
 )
 
 GEMINI_COVER_LETTER_MODEL = os.getenv(
@@ -154,9 +205,30 @@ GEMINI_COVER_LETTER_MODEL = os.getenv(
     GEMINI_MODEL,
 )
 
+
 GEMINI_INTERVIEW_API_KEY = os.getenv(
     'GEMINI_INTERVIEW_API_KEY',
     GEMINI_API_KEY,
+).strip()
+
+GEMINI_INTERVIEW_API_KEY_2 = os.getenv(
+    'GEMINI_INTERVIEW_API_KEY_2',
+    GEMINI_API_KEY_2,
+).strip()
+
+GEMINI_INTERVIEW_API_KEY_3 = os.getenv(
+    'GEMINI_INTERVIEW_API_KEY_3',
+    GEMINI_API_KEY_3,
+).strip()
+
+GEMINI_INTERVIEW_API_KEYS = unique_env_values(
+    env_list('GEMINI_INTERVIEW_API_KEYS')
+    + [
+        GEMINI_INTERVIEW_API_KEY,
+        GEMINI_INTERVIEW_API_KEY_2,
+        GEMINI_INTERVIEW_API_KEY_3,
+        *GEMINI_API_KEYS,
+    ]
 )
 
 GEMINI_INTERVIEW_MODEL = os.getenv(
@@ -166,3 +238,5 @@ GEMINI_INTERVIEW_MODEL = os.getenv(
 
 JSEARCH_API_KEY = os.getenv('JSEARCH_API_KEY', '')
 JSEARCH_API_HOST = os.getenv('JSEARCH_API_HOST', 'jsearch.p.rapidapi.com')
+
+GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_ID', '')

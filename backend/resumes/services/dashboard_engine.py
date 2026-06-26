@@ -239,6 +239,275 @@ def _latest_readiness_radar(report: Any) -> list[dict[str, Any]]:
 
     return radar
 
+def _clean_dashboard_text(value: Any) -> str:
+    return str(value or '').strip()
+
+
+def _latest_missing_keywords(report: Any, limit: int = 8) -> list[str]:
+    if not report:
+        return []
+
+    output: list[str] = []
+    seen: set[str] = set()
+
+    for item in _missing_keywords(report):
+        clean = _clean_dashboard_text(item)
+        key = clean.lower()
+
+        if clean and key not in seen:
+            output.append(clean)
+            seen.add(key)
+
+        if len(output) >= limit:
+            break
+
+    return output
+
+
+def _latest_top_fixes(report: Any, limit: int = 5) -> list[str]:
+    if not report:
+        return []
+
+    summary = (report.ats_result or {}).get('summary') or {}
+    fixes = summary.get('top_fixes') or []
+
+    output: list[str] = []
+    seen: set[str] = set()
+
+    for item in fixes:
+        clean = _clean_dashboard_text(item)
+        key = clean.lower()
+
+        if clean and key not in seen:
+            output.append(clean)
+            seen.add(key)
+
+        if len(output) >= limit:
+            break
+
+    return output
+
+
+def _weakest_latest_readiness_items(report: Any, limit: int = 2) -> list[dict[str, Any]]:
+    radar = _latest_readiness_radar(report)
+
+    clean = [
+        {
+            'axis': _clean_dashboard_text(item.get('axis')),
+            'score': _to_score(item.get('score')),
+            'description': _clean_dashboard_text(item.get('description')),
+        }
+        for item in radar
+        if isinstance(item, dict) and _clean_dashboard_text(item.get('axis'))
+    ]
+
+    return sorted(clean, key=lambda item: item['score'])[:limit]
+
+
+def _keyword_phrase(items: list[str], fallback: str = 'your latest ATS gaps') -> str:
+    clean = [_clean_dashboard_text(item) for item in items if _clean_dashboard_text(item)]
+
+    if not clean:
+        return fallback
+
+    return ', '.join(clean[:3])
+
+
+def _build_latest_report_action_plan(latest: Any) -> dict[str, Any]:
+    if not latest:
+        return {
+            'engine': 'rule_based_career_action_plan',
+            'status': 'empty',
+            'headline': 'Run an ATS analysis to unlock your Career Action Plan.',
+            'career_positioning': 'CareerLens will create a rule-based plan after your first ATS report.',
+            'target_direction': 'Upload a resume, paste a job description, and run ATS analysis first.',
+            'readiness_summary': 'No latest ATS report is available yet.',
+            'priority_actions': [],
+            'application_strategy': [],
+            'skill_plan': [],
+            'resume_focus': [],
+            'risk_warnings': [],
+            'next_7_days': [
+                'Upload or select a resume.',
+                'Paste a complete job description.',
+                'Run ATS analysis.',
+                'Return to the dashboard to view your Career Action Plan.',
+            ],
+            'next_30_days': [],
+            'message': 'No latest ATS report found.',
+        }
+
+    job_title = _clean_dashboard_text(getattr(latest, 'job_title', '')) or 'target role'
+    resume_name = _clean_dashboard_text(getattr(getattr(latest, 'resume', None), 'original_name', '')) or 'latest resume'
+
+    job_match_score = _score(latest, 'job_match_score')
+    readability_score = _score(latest, 'ats_readability_score')
+
+    match_level = (
+        (latest.ats_result or {}).get('job_match_level')
+        or (latest.ats_result or {}).get('match_level')
+        or _level(job_match_score)
+    )
+
+    readability_level = (
+        (latest.ats_result or {}).get('ats_readability_level')
+        or _level(readability_score)
+    )
+
+    missing_keywords = _latest_missing_keywords(latest)
+    top_fixes = _latest_top_fixes(latest)
+    weakest_items = _weakest_latest_readiness_items(latest)
+
+    missing_phrase = _keyword_phrase(missing_keywords)
+    top_fix = top_fixes[0] if top_fixes else ''
+    weakest = weakest_items[0] if weakest_items else {}
+    weakest_axis = weakest.get('axis') or 'Requirement coverage'
+    weakest_score = weakest.get('score', 0)
+
+    if job_match_score >= 85 and readability_score >= 85:
+        headline = f'{job_title}: strong latest ATS readiness'
+        readiness_summary = (
+            f'Your latest report is strong: {job_match_score}% job match and '
+            f'{readability_score}% readability.'
+        )
+    elif job_match_score >= 60:
+        headline = f'{job_title}: improve final ATS gaps'
+        readiness_summary = (
+            f'Your latest report is {match_level} at {job_match_score}% job match. '
+            f'Readability is {readability_level} at {readability_score}%.'
+        )
+    else:
+        headline = f'{job_title}: priority resume repair needed'
+        readiness_summary = (
+            f'Your latest report is {match_level} at {job_match_score}% job match. '
+            f'Focus on the biggest missing requirements before applying.'
+        )
+
+    if missing_keywords:
+        first_action_next_step = f'Add truthful evidence for: {missing_phrase}.'
+    elif top_fix:
+        first_action_next_step = top_fix
+    else:
+        first_action_next_step = 'Strengthen the most relevant achievements for this job.'
+
+    if readability_score < 75:
+        readability_action = {
+            'id': 'action-2',
+            'title': 'Improve ATS readability',
+            'reason': f'Readability is {readability_score}%, so formatting may reduce parsing quality.',
+            'next_step': 'Use clear headings, simple bullets, and one-column ATS-friendly layout.',
+            'timeframe': 'This week',
+        }
+    else:
+        readability_action = {
+            'id': 'action-2',
+            'title': 'Strengthen weakest section',
+            'reason': f'{weakest_axis} is the weakest latest readiness area at {weakest_score}%.',
+            'next_step': f'Review the {weakest_axis.lower()} section and add truthful job-specific evidence.',
+            'timeframe': 'This week',
+        }
+
+    return {
+        'engine': 'rule_based_career_action_plan',
+        'status': 'success',
+        'source': 'latest_ats_report_only',
+        'latest_report_id': str(latest.id),
+        'headline': headline,
+        'career_positioning': (
+            f'Position your resume for {job_title} using only evidence from {resume_name}. '
+            'This plan is based only on your latest ATS report.'
+        ),
+        'target_direction': (
+            f'Prioritize improving the latest {job_title} report before creating more applications. '
+            'Use the missing requirements as your short-term improvement checklist.'
+        ),
+        'readiness_summary': readiness_summary,
+        'priority_actions': [
+            {
+                'id': 'action-1',
+                'title': 'Fix latest ATS gaps',
+                'reason': (
+                    f'The latest report is missing: {missing_phrase}.'
+                    if missing_keywords
+                    else 'The latest report has no major keyword gaps, so focus on stronger proof.'
+                ),
+                'next_step': first_action_next_step,
+                'timeframe': 'Today',
+            },
+            readability_action,
+            {
+                'id': 'action-3',
+                'title': 'Recheck after edits',
+                'reason': 'The action plan should be validated against the same target role.',
+                'next_step': 'Update the resume, rerun ATS analysis, and compare the new latest score.',
+                'timeframe': 'After editing',
+            },
+        ],
+        'application_strategy': [
+            f'Use this resume mainly for {job_title} roles until the latest match improves.',
+            'Apply only after the top latest ATS gaps are reviewed.',
+            'Do not use missing keywords unless they are truthful and supported.',
+            'Create a new ATS report when targeting a different job title.',
+        ],
+        'skill_plan': [
+            (
+                f'Build proof for {missing_keywords[0]}.'
+                if missing_keywords
+                else 'Build one stronger proof point for the target role.'
+            ),
+            (
+                f'Review {missing_keywords[1]}.'
+                if len(missing_keywords) > 1
+                else 'Prepare one short project, course, or work example.'
+            ),
+            'Prepare interview examples for the strongest resume claims.',
+            'Avoid adding unsupported skills just to increase the score.',
+        ],
+        'resume_focus': [
+            f'Match the resume headline or summary to {job_title}.',
+            (
+                f'Add truthful evidence for {missing_phrase}.'
+                if missing_keywords
+                else 'Make achievements more specific and measurable.'
+            ),
+            'Keep bullet points clear, specific, and easy to scan.',
+            'Keep formatting ATS-friendly with standard section headings.',
+        ],
+        'risk_warnings': [
+            'Do not add fake tools, certificates, experience, or achievements.',
+            'Do not apply with the same resume to unrelated roles without checking ATS fit.',
+            'Do not ignore readability even when keyword coverage improves.',
+        ],
+        'next_7_days': [
+            'Review the latest ATS report top fixes.',
+            (
+                f'Update resume wording for {missing_phrase}.'
+                if missing_keywords
+                else 'Improve two resume bullets with clearer evidence.'
+            ),
+            'Clean formatting and check section headings.',
+            'Rerun ATS analysis and compare the new latest report.',
+        ],
+        'next_30_days': [
+            'Create one improved resume version for your strongest target role.',
+            'Track whether the latest ATS score improves after each edit.',
+            'Build proof for one repeated missing skill or requirement.',
+            'Use the best-scoring resume version for priority applications.',
+        ],
+        'latest_report_snapshot': {
+            'job_title': job_title,
+            'resume_name': resume_name,
+            'job_match_score': job_match_score,
+            'match_level': match_level,
+            'ats_readability_score': readability_score,
+            'ats_readability_level': readability_level,
+            'missing_keywords': missing_keywords,
+            'top_fixes': top_fixes,
+            'weakest_readiness_areas': weakest_items,
+        },
+        'message': 'Career Action Plan generated instantly from the latest ATS report only. No AI API was used.',
+    }
+
 def build_dashboard_payload(resumes: list[Any], reports: list[Any], applications: list[Any] | None = None) -> dict[str, Any]:
     reports = sorted(reports, key=lambda item: item.created_at, reverse=True)
     latest = reports[0] if reports else None
@@ -349,6 +618,7 @@ def build_dashboard_payload(resumes: list[Any], reports: list[Any], applications
         'average_ats_readability_score': round(sum(readability_scores) / len(readability_scores), 1) if readability_scores else 0,
         'best_job_match_score': max(scores) if scores else 0,
         'latest_report': latest_report,
+        'career_action_plan': _build_latest_report_action_plan(latest),
         'score_trend': score_trend,
         'score_distribution': [{'level': level, 'count': distribution.get(level, 0)} for level in ['Excellent', 'High', 'Moderate', 'Fair', 'Low']],
         'top_missing_keywords': [{'keyword': keyword, 'count': count} for keyword, count in missing_counter.most_common(12)],

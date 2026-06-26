@@ -607,7 +607,7 @@ async function exportPreviewPdf(element, setMessage) {
 
     setMessage?.({
       type: 'error',
-      text: `Could not export PDF: ${error?.message || 'Unknown browser rendering error.'}`,
+      text: 'Could not export the PDF right now. Please try again, or download the DOCX version instead.',
     });
   } finally {
     if (printWrapper && document.body.contains(printWrapper)) {
@@ -1535,12 +1535,17 @@ export default function TailorResumePage() {
       setFields(fieldsFromStructured(result.structured_resume || {}, result.tailored_resume_text || '', selectedReport));
       setMessage({
         type: result.status === 'success' ? 'success' : 'warning',
-        text: result.status === 'success' ? 'AI tailored resume generated. Review and edit it before exporting.' : toText(result.message, 'AI tailoring returned a fallback result.'),
-      });
+        text:
+          result.status === 'success'
+            ? 'Tailored resume generated. Review and edit it before exporting.'
+            : 'Enhanced resume tailoring is temporarily unavailable. Your original resume text is still available so you can continue editing manually.',
+        });
     } catch (error) {
-      setMessage({ type: 'error', text: getErrorMessage(error) });
-    } finally {
-      setTailoring(false);
+      console.error('Resume tailoring failed:', error);
+      setMessage({
+        type: 'error',
+        text: 'We could not complete the resume tailoring request right now. Please try again later.',
+      });
     }
   };
 
@@ -1564,10 +1569,10 @@ export default function TailorResumePage() {
               Choose a CV template, confirm truthful ATS keywords, and let AI tailor your resume safely.
             </h1>
             <p className="mt-5 max-w-4xl text-md leading-8 text-slate-600">
-              CareerLens uses Gemini to rewrite only with user-confirmed, truthful keywords. AI does not change the ATS score and does not preserve the original PDF design exactly.
+              CareerLens uses an enhanced tailoring service to rewrite only with user-confirmed, truthful keywords. Tailoring does not change the ATS score and does not preserve the original PDF design exactly.
             </p>
           </div>
-          <Link to="/ats" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
+          <Link to="/ats" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
             Back to ATS
           </Link>
         </div>
@@ -1582,7 +1587,7 @@ export default function TailorResumePage() {
           <KeywordConfirmPanel groups={groups} selectedKeywords={selectedKeywords} setSelectedKeywords={setSelectedKeywords} />
 
           <Notice type="warning">
-            AI can only use the keywords you select here. Select a missing keyword only if it truthfully describes your real skills, education, experience, tools, or background.
+            The tailoring service can only use the keywords you select here. Select a missing keyword only if it truthfully describes your real skills, education, experience, tools, or background.
           </Notice>
 
           <label className="flex cursor-pointer gap-3 rounded-3xl bg-white p-5 ring-1 ring-slate-200">
@@ -1598,7 +1603,7 @@ export default function TailorResumePage() {
             disabled={tailoring || !selectedReport?.id || !truthConfirmed}
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-400 px-6 py-4 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
           >
-            {tailoring ? <Loader2 className="animate-spin" size={18} /> : <WandSparkles size={18} />}
+            
             {tailoring ? 'Generating tailored resume...' : `Generate Tailored Resume${selectedTotal ? ` (${selectedTotal} confirmed)` : ''}`}
           </button>
         </div>

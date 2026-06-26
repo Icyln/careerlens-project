@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from typing import Any
+import time
 
 from django.conf import settings
 
@@ -13,6 +15,7 @@ except Exception:  # pragma: no cover
     genai = None
     types = None
 
+logger = logging.getLogger(__name__)
 
 MAX_RESUME_CHARS = 12000
 MAX_JOB_DESCRIPTION_CHARS = 8000
@@ -29,7 +32,6 @@ DEFAULT_COVER_LETTER_RESULT: dict[str, Any] = {
     'safety_notes': [],
     'next_steps': [],
     'candidate_name': '',
-    'word_count': 0,
     'message': '',
 }
 
@@ -113,6 +115,104 @@ def _strip_json_code_fence(text: str) -> str:
 
     return text
 
+def _configured_cover_letter_api_keys() -> list[str]:
+    raw_values = [
+        getattr(settings, 'GEMINI_COVER_LETTER_API_KEYS', []),
+        getattr(settings, 'GEMINI_COVER_LETTER_API_KEY', ''),
+        getattr(settings, 'GEMINI_COVER_LETTER_API_KEY_2', ''),
+        getattr(settings, 'GEMINI_COVER_LETTER_API_KEY_3', ''),
+        getattr(settings, 'GEMINI_API_KEYS', []),
+        getattr(settings, 'GEMINI_API_KEY', ''),
+        getattr(settings, 'GEMINI_API_KEY_2', ''),
+        getattr(settings, 'GEMINI_API_KEY_3', ''),
+    ]
+    keys: list[str] = []
+
+    for value in raw_values:
+        values = value if isinstance(value, (list, tuple, set)) else str(value).split(',')
+
+        for item in values:
+            key = str(item or '').strip()
+
+            if key and key not in keys:
+                keys.append(key)
+
+    return keys
+
+
+def _gemini_retry_attempts() -> int:
+    try:
+        return max(1, int(getattr(settings, 'GEMINI_RETRY_ATTEMPTS', 1) or 1))
+    except (TypeError, ValueError):
+        return 1
+
+
+def _gemini_key_switch_delay_seconds() -> int:
+    try:
+        return max(0, int(getattr(settings, 'GEMINI_KEY_SWITCH_DELAY_SECONDS', 2) or 0))
+    except (TypeError, ValueError):
+        return 2
+
+
+def _rotate_api_keys(api_keys: list[str]) -> list[str]:
+    if len(api_keys) <= 1:
+        return api_keys
+
+    start_index = time.monotonic_ns() % len(api_keys)
+    return api_keys[start_index:] + api_keys[:start_index]
+
+
+def _generate_cover_letter_json_with_key_fallback(
+    *,
+    contents: str,
+    model: str,
+    temperature: float = 0.25,
+) -> dict[str, Any]:
+    api_keys = _rotate_api_keys(_configured_cover_letter_api_keys())
+
+    if not api_keys:
+        raise RuntimeError('No Gemini API keys are configured on the backend.')
+
+    errors: list[str] = []
+    model = model or getattr(settings, 'GEMINI_MODEL', 'gemini-2.5-flash-lite')
+    attempts_per_key = _gemini_retry_attempts()
+    delay_seconds = _gemini_key_switch_delay_seconds()
+
+    for attempt in range(1, attempts_per_key + 1):
+        for key_index, api_key in enumerate(api_keys, start=1):
+            try:
+                client = genai.Client(api_key=api_key)
+                response = client.models.generate_content(
+                    model=model,
+                    contents=contents,
+                    config=types.GenerateContentConfig(
+                        temperature=temperature,
+                        response_mime_type='application/json',
+                    ),
+                )
+
+                text = getattr(response, 'text', '') or ''
+                payload = json.loads(_strip_json_code_fence(text))
+
+                if not isinstance(payload, dict):
+                    raise ValueError('Gemini returned JSON that is not an object.')
+
+                return payload
+
+            except Exception as exc:
+                errors.append(f'key #{key_index}, attempt #{attempt}: {exc}')
+
+                has_next_key = key_index < len(api_keys)
+                has_next_attempt = attempt < attempts_per_key
+
+                if delay_seconds and (has_next_key or has_next_attempt):
+                    time.sleep(delay_seconds)
+
+    last_error = errors[-1] if errors else 'unknown error'
+    raise RuntimeError(
+        f'Gemini cover letter failed after {len(errors)} request attempt(s) '
+        f'across {len(api_keys)} Gemini API key(s). Last error: {last_error}'
+    )
 
 def _format_candidate_name(name: str) -> str:
     name = _clean_string(name)
@@ -331,7 +431,6 @@ def _merge_result(
     result['missing_info'] = _listify(result.get('missing_info'))
     result['safety_notes'] = _listify(result.get('safety_notes'))
     result['next_steps'] = _listify(result.get('next_steps'))
-    result['word_count'] = len(re.findall(r'\b\w+\b', result['cover_letter']))
     result['message'] = _clean_string(result.get('message'))
 
     return result
@@ -452,7 +551,7 @@ Thank you for considering my application. I would welcome the opportunity to dis
             'cover_letter': body,
             'candidate_name': clean_candidate_name,
             'highlighted_strengths': [
-                'Generated using a safe fallback draft because Gemini was unavailable.',
+                'Generated as a safe draft when the enhanced writer was temporarily unavailable.',
                 'Uses the selected job title and company details when provided.',
                 'Avoids unsupported claims about experience, degrees, certifications, or achievements.',
             ],
@@ -463,7 +562,7 @@ Thank you for considering my application. I would welcome the opportunity to dis
                 'Verify that every keyword and claim is supported by the original resume.',
             ],
             'safety_notes': [
-                'This is a fallback draft, not a full Gemini-generated letter.',
+                'This is a safe draft. Review and personalize it before sending.',
                 'No fake experience, certifications, degrees, or employers were added.',
                 'Please review before submitting to an employer.',
             ],
@@ -472,7 +571,7 @@ Thank you for considering my application. I would welcome the opportunity to dis
                 'Add one truthful example from your resume.',
                 'Download as PDF or DOCX after reviewing.',
             ],
-            'message': message or 'Gemini was unavailable, so CareerLens created a safe fallback cover letter draft.',
+            'message': message or 'The enhanced cover letter writer is temporarily unavailable, so CareerLens created a safe draft.',
         },
         status='fallback',
         candidate_name=clean_candidate_name,
@@ -577,12 +676,9 @@ def generate_cover_letter(
 ) -> dict[str, Any]:
     candidate_name = _format_candidate_name(candidate_name) or _extract_candidate_name(resume_text)
 
-    api_key = (
-        getattr(settings, 'GEMINI_COVER_LETTER_API_KEY', '')
-        or getattr(settings, 'GEMINI_API_KEY', '')
-    )
+    if not _configured_cover_letter_api_keys():
+        logger.warning('CareerLens cover letter unavailable: no Gemini API keys are configured.')
 
-    if not api_key:
         return _fallback_cover_letter(
             resume_text=resume_text,
             job_title=job_title,
@@ -594,7 +690,7 @@ def generate_cover_letter(
             length=length,
             focus_keywords=focus_keywords,
             user_notes=user_notes,
-            message='GEMINI_API_KEY is not configured, so CareerLens created a safe fallback cover letter draft.',
+            message='The enhanced cover letter writer is temporarily unavailable, so CareerLens created a safe draft.',
         )
 
     if genai is None or types is None:
@@ -609,7 +705,7 @@ def generate_cover_letter(
             length=length,
             focus_keywords=focus_keywords,
             user_notes=user_notes,
-            message='google-genai is not installed, so CareerLens created a safe fallback cover letter draft.',
+            message='The enhanced cover letter writer is temporarily unavailable, so CareerLens created a safe draft.',
         )
 
     model = (
@@ -619,9 +715,7 @@ def generate_cover_letter(
     )
 
     try:
-        client = genai.Client(api_key=api_key)
-
-        response = client.models.generate_content(
+        payload = _generate_cover_letter_json_with_key_fallback(
             model=model,
             contents=_build_prompt(
                 resume_text=resume_text,
@@ -635,17 +729,8 @@ def generate_cover_letter(
                 focus_keywords=focus_keywords,
                 user_notes=user_notes,
             ),
-            config=types.GenerateContentConfig(
-                temperature=0.25,
-                response_mime_type='application/json',
-            ),
+            temperature=0.25,
         )
-
-        text = getattr(response, 'text', '') or ''
-        payload = json.loads(_strip_json_code_fence(text))
-
-        if not isinstance(payload, dict):
-            raise ValueError('Gemini returned JSON that is not an object.')
 
         return _merge_result(
             payload,
@@ -654,10 +739,10 @@ def generate_cover_letter(
         )
 
     except Exception as exc:
-        if _is_quota_or_rate_error(exc):
-            message = 'Gemini quota or rate limit was reached, so CareerLens created a safe fallback cover letter draft.'
-        else:
-            message = 'Gemini could not generate the cover letter, so CareerLens created a safe fallback cover letter draft.'
+        logger.exception(
+           'CareerLens cover letter generation failed. Technical details are hidden from users. Error: %s',
+        exc,
+    )
 
         return _fallback_cover_letter(
             resume_text=resume_text,
@@ -670,5 +755,5 @@ def generate_cover_letter(
             length=length,
             focus_keywords=focus_keywords,
             user_notes=user_notes,
-            message=message,
-        )
+            message='The enhanced cover letter writer is temporarily unavailable, so CareerLens created a safe draft.',
+        )   

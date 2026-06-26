@@ -423,7 +423,6 @@ function EmptyPreview() {
 function LetterPreview({ result, selectedReport, companyName = '', setMessage }) {
   const coverLetter = toText(result?.cover_letter, '');
   const subjectLine = toText(result?.subject_line, 'Cover Letter');
-  const wordCount = result?.word_count || coverLetter.split(/\s+/).filter(Boolean).length;
   const jobTitle = selectedReport?.job_title || 'Cover Letter';
   const exportCompanyName = companyName || '';
   const exportText = `${subjectLine}\n\n${coverLetter}`;
@@ -505,11 +504,6 @@ function LetterPreview({ result, selectedReport, companyName = '', setMessage })
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 ring-1 ring-[#111439]/10">
                 <Building2 size={14} />
                 {exportCompanyName || 'Company not specified'}
-              </span>
-
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 ring-1 ring-[#111439]/10">
-                <FileText size={14} />
-                {wordCount} words
               </span>
             </div>
           </div>
@@ -767,7 +761,10 @@ export default function CoverLetterPage() {
         setSelectedReportId(clean[0].id);
       }
     } catch (error) {
-      setMessage({ type: 'error', text: getErrorMessage(error) });
+      setMessage({
+        type: 'error',
+        text: 'Could not load your ATS reports right now. Please refresh and try again.',
+      });
     } finally {
       setLoadingReports(false);
     }
@@ -811,12 +808,17 @@ export default function CoverLetterPage() {
       if (data.status === 'success') {
         setMessage({ type: 'success', text: 'Cover letter generated successfully.' });
       } else {
-        setMessage({ type: 'error', text: data.message || 'Cover letter could not be generated.' });
+        setMessage({
+          type: 'warning',
+          text: 'The enhanced cover letter writer is temporarily unavailable, so CareerLens created a safe draft you can review and edit.',
+        });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: getErrorMessage(error) });
-    } finally {
-      setGenerating(false);
+      console.error('Cover letter generation failed:', error);
+      setMessage({
+        type: 'error',
+        text: 'We could not complete the cover letter request right now. Please try again later.',
+      });
     }
   }
 

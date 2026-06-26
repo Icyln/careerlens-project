@@ -7,13 +7,13 @@ export default function Alert({ type = 'info', children, onClose }) {
   };
   
   return (
-    <div className={`flex items-start justify-between gap-4 rounded-2xl border p-4 text-sm font-medium ${classes[type] || classes.info} animate-fade-in shadow-sm`}>
+    <div className={`flex items-start justify-between gap-3 sm:gap-4 rounded-2xl border p-4 text-xs sm:text-sm font-medium ${classes[type] || classes.info} animate-fade-in shadow-sm`}>
       <div className="leading-relaxed flex-1">{children}</div>
       {onClose && (
         <button 
           type="button" 
           onClick={onClose} 
-          className="text-current opacity-50 hover:opacity-100 transition-opacity p-1 font-bold text-lg leading-none flex items-center justify-center rounded-lg hover:bg-black/5" 
+          className="text-current opacity-50 hover:opacity-100 transition-opacity p-1 font-bold text-lg leading-none flex items-center justify-center rounded-lg hover:bg-black/5 shrink-0" 
           aria-label="Close message"
         >
           &times;

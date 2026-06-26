@@ -22,7 +22,7 @@ import {
   X,
   
 } from 'lucide-react';
-import { fetchDashboard, generateCareerGuidance, getErrorMessage } from '../api/client.js';
+import { fetchDashboard, getErrorMessage } from '../api/client.js';
 import { toArray, toNumber, toText } from '../utils/safeRender.js';
 
 function clamp(value, min = 0, max = 100) {
@@ -100,7 +100,7 @@ const EMPTY_GUIDANCE_FORM = {
   extra_notes: '',
 };
 
-const GUIDANCE_STORAGE_KEY = 'careerlens_career_guidance';
+const LEGACY_GUIDANCE_STORAGE_KEY = 'careerlens_career_guidance';
 
 function getDifficultyLabel(value = '') {
   return String(value || '')
@@ -222,11 +222,11 @@ function ScoreVelocityChart({ trend }) {
                   key={`${item.label}-${index}`}
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
-                  className="group relative mx-1 flex h-full flex-1 flex-col items-center justify-end sm:mx-2"
+                  className="group relative mx-0.5 flex h-full flex-1 flex-col items-center justify-end sm:mx-2"
                 >
                   <div
                     className={`absolute -top-12 max-w-[13rem] whitespace-normal rounded-md bg-[#111439] px-2 py-1 text-center text-[10px] font-semibold text-white shadow-lg transition-all duration-200 ${
-                      isHovered ? 'translate-y-0 opacity-100' : 'translate-y-1 opacity-0'
+                      isHovered ? 'translate-y-0 opacity-100' : 'translate-y-1 opacity-0 pointer-events-none'
                     }`}
                   >
                     <div>{item.job_title || 'ATS report'}</div>
@@ -378,7 +378,7 @@ function ResumeReadinessRadar({ items }) {
 
   return (
     <div>
-      <div className="relative mx-auto flex justify-center">
+      <div className="relative mx-auto flex w-full justify-center">
         <svg
           viewBox={`0 0 ${size} ${size}`}
           className="h-[280px] w-full max-w-[360px]"
@@ -448,7 +448,7 @@ function ResumeReadinessRadar({ items }) {
                 y={labelPoint.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="fill-[#111439] text-[9px] font-semibold"
+                className="fill-[#111439] text-[12px] font-semibold"
               >
                 {item.axis.length > 16 ? `${item.axis.slice(0, 15)}…` : item.axis}
               </text>
@@ -678,7 +678,7 @@ function AiInsightCard({ type, title, text, actionLabel, actionTo, icon: Icon, t
       {actionTo && actionLabel && (
         <Link
           to={actionTo}
-          className={`inline-flex items-center gap-1 rounded-xl border bg-white px-3 py-2 text-xs font-semiboldshadow-sm transition-colors ${classes.button}`}
+          className={`inline-flex items-center justify-center gap-1 w-full sm:w-auto rounded-xl border bg-white px-3 py-2 text-xs font-semibold shadow-sm transition-colors ${classes.button}`}
         >
           {actionLabel}
           <ChevronRight size={12} />
@@ -688,237 +688,47 @@ function AiInsightCard({ type, title, text, actionLabel, actionTo, icon: Icon, t
   );
 }
 
-function CareerGuidanceModal({
-  open,
-  form,
-  setForm,
-  loading,
-  onClose,
-  onSubmit,
-}) {
-  if (!open) return null;
-
-  const inputClass =
-    'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10';
-
-  const labelClass =
-    'text-xs font-semibold uppercase tracking-widest text-slate-400';
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
-      <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-2xl">
-        <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-6">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
-              <BrainCircuit size={14} />
-              Career guidance
-            </div>
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950">
-              Generate personalized career guidance
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-              Tell CareerLens where you want to go, what is holding you back, and what kind of roles you want. The dashboard signals will be used together with your answers.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <form onSubmit={onSubmit} className="max-h-[calc(92vh-9rem)] overflow-y-auto p-6">
-          <div className="grid gap-5 lg:grid-cols-2">
-            <label className="block">
-              <span className={labelClass}>Career goals</span>
-              <textarea
-                value={form.career_goals}
-                onChange={(event) => setForm({ ...form, career_goals: event.target.value })}
-                rows={4}
-                placeholder="Example: I want to move into a frontend developer role or a stronger hospitality role..."
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block">
-              <span className={labelClass}>Current struggles / pain points</span>
-              <textarea
-                value={form.pain_points}
-                onChange={(event) => setForm({ ...form, pain_points: event.target.value })}
-                rows={4}
-                placeholder="Example: I am not sure which jobs fit me, my ATS score is low, I lack experience..."
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block">
-              <span className={labelClass}>Strengths</span>
-              <textarea
-                value={form.strengths}
-                onChange={(event) => setForm({ ...form, strengths: event.target.value })}
-                rows={3}
-                placeholder="Example: communication, teamwork, React, customer service, fast learner..."
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block">
-              <span className={labelClass}>Weaknesses / gaps</span>
-              <textarea
-                value={form.weaknesses}
-                onChange={(event) => setForm({ ...form, weaknesses: event.target.value })}
-                rows={3}
-                placeholder="Example: limited experience, missing keywords, weak projects, nervous interviews..."
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block">
-              <span className={labelClass}>Jobs you want</span>
-              <input
-                value={form.target_jobs}
-                onChange={(event) => setForm({ ...form, target_jobs: event.target.value })}
-                placeholder="Example: Frontend Developer, Server, Office Assistant"
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block">
-              <span className={labelClass}>Companies you want</span>
-              <input
-                value={form.target_companies}
-                onChange={(event) => setForm({ ...form, target_companies: event.target.value })}
-                placeholder="Example: hotels, restaurants, tech companies, specific company names"
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block">
-              <span className={labelClass}>Preferred industries</span>
-              <input
-                value={form.preferred_industries}
-                onChange={(event) => setForm({ ...form, preferred_industries: event.target.value })}
-                placeholder="Example: Hospitality, Software, Admin, Healthcare"
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block">
-              <span className={labelClass}>Timeline</span>
-              <input
-                value={form.timeline}
-                onChange={(event) => setForm({ ...form, timeline: event.target.value })}
-                placeholder="Example: I want to get interviews within 30 days"
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block lg:col-span-2">
-              <span className={labelClass}>Long-term goals</span>
-              <textarea
-                value={form.long_term_goals}
-                onChange={(event) => setForm({ ...form, long_term_goals: event.target.value })}
-                rows={3}
-                placeholder="Example: I want to become a senior frontend developer, restaurant supervisor, or move into IT support..."
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block lg:col-span-2">
-              <span className={labelClass}>Constraints or extra notes</span>
-              <textarea
-                value={`${form.constraints}${form.extra_notes ? `\n${form.extra_notes}` : ''}`}
-                onChange={(event) => setForm({ ...form, constraints: event.target.value })}
-                rows={3}
-                placeholder="Example: I can only work part-time, I need remote/hybrid, I am a student, I need beginner-friendly roles..."
-                className={inputClass}
-              />
-            </label>
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs leading-5 text-slate-500">
-              CareerLens will combine your answers with ATS scores, readiness radar, repeated gaps, and application pipeline data.
-            </p>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
-              >
-                {loading ? <Loader2 size={17} className="animate-spin" /> : <Sparkles size={17} />}
-                {loading ? 'Generating...' : 'Generate guidance'}
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function CareerGuidancePanel({ guidance, loading, onOpen }) {
-  const actions = toArray(guidance?.priority_actions);
-  const hasGuidance = Boolean(guidance?.headline || actions.length);
+function CareerActionPlanPanel({ plan }) {
+  const actions = toArray(plan?.priority_actions);
+  const hasPlan = Boolean(plan?.headline || actions.length);
+  const nextSevenDays = normalizeGuidanceList(plan?.next_7_days);
 
   return (
     <div className="rounded-[1.5rem] border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-md">
-      <div className="mb-4 flex items-start justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
           <Compass size={13} />
-          Career guidance
+          Career Action Plan
         </span>
 
-        <button
-          type="button"
-          onClick={onOpen}
-          disabled={loading}
-          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
-        >
-          {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-          {hasGuidance ? 'Regenerate' : 'Generate'}
-        </button>
+        
       </div>
 
-      {!hasGuidance ? (
+      {!hasPlan || plan?.status === 'empty' ? (
         <div>
           <h3 className="text-base font-semibold leading-7 text-slate-950">
-            Build your Career Intelligence brief
+            Run ATS analysis to unlock your plan
           </h3>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            Add your goals, target roles, companies, strengths, weaknesses, and current struggles. CareerLens will turn your dashboard signals into a realistic action plan.
+            CareerLens will create an instant action plan from your latest ATS report only.
           </p>
 
-          <button
-            type="button"
-            onClick={onOpen}
-            disabled={loading}
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+          <Link
+            to="/resumes"
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
-            <BrainCircuit size={16} />
-            Start guidance form
-          </button>
+            <FileText size={16} />
+            Upload or analyze resume
+          </Link>
         </div>
       ) : (
         <div>
           <h3 className="text-base font-semibold leading-7 text-slate-950">
-            {toText(guidance.headline, 'Personalized career guidance')}
+            {toText(plan.headline, 'Latest ATS Career Action Plan')}
           </h3>
 
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            {toText(guidance.career_positioning, guidance.readiness_summary)}
+            {toText(plan.career_positioning, plan.readiness_summary)}
           </p>
 
           {!!actions.length && (
@@ -953,13 +763,13 @@ function CareerGuidancePanel({ guidance, loading, onOpen }) {
             </div>
           )}
 
-          {!!normalizeGuidanceList(guidance?.next_7_days).length && (
+          {!!nextSevenDays.length && (
             <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
               <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700">
                 Next 7 days
               </p>
               <ul className="mt-3 space-y-2">
-                {normalizeGuidanceList(guidance.next_7_days).slice(0, 3).map((item) => (
+                {nextSevenDays.slice(0, 3).map((item) => (
                   <li key={item} className="flex gap-2 text-xs leading-5 text-emerald-800">
                     <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
                     <span>{item}</span>
@@ -968,117 +778,16 @@ function CareerGuidancePanel({ guidance, loading, onOpen }) {
               </ul>
             </div>
           )}
-        </div>
-      )}
 
-      <Link
-        to="/career-guidance"
-        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#111439] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#1a1f54]"
-      >
-       See Full Guidance
-      <ChevronRight size={16} />
-      </Link>
- 
-    </div>
-  );
-}
-
-function CareerGuidancePreviewCard({ guidance, loadingAi, onGenerate }) {
-  const actions = getGuidanceActions(guidance);
-  const hasGuidance = Boolean(guidance?.headline || actions.length);
-  const previewText = getGuidancePreviewText(guidance);
-
-  return (
-    <div className="rounded-2xl border border-[#111439]/10 bg-white/80 p-5 shadow-sm backdrop-blur-md">
-      <div className="mb-3 flex items-start justify-between">
-        <span className="inline-flex items-center gap-1 rounded bg-[#106EBE]/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-[#106EBE]">
-          <Compass size={10} />
-          Career guidance
-        </span>
-
-        <Sparkles size={14} className="text-[#106EBE]/40" />
-      </div>
-
-      {!hasGuidance ? (
-        <>
-          <h3 className="mb-2 text-sm font-semibold leading-tight text-[#111439]">
-            Build your Career Intelligence plan
-          </h3>
-
-          <p className="mb-4 text-xs leading-6 text-[#111439]/65">
-            Generate a personalized plan from your goals, target roles, companies,
-            strengths, weaknesses, and dashboard signals.
-          </p>
-
-          <button
-            type="button"
-            onClick={onGenerate}
-            disabled={loadingAi}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#111439] px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#1a1f54] disabled:opacity-60"
+          <Link
+            to="/career-guidance"
+            state={{ guidance: plan }}
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#111439] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#1a1f54]"
           >
-            {loadingAi ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <BrainCircuit size={14} />
-            )}
-            {loadingAi ? 'Generating...' : 'Generate guidance'}
-          </button>
-        </>
-      ) : (
-        <>
-          <h3 className="mb-2 text-sm font-semibold leading-tight text-[#111439]">
-            {toText(guidance?.headline, 'Personalized career plan')}
-          </h3>
-
-          <p className="mb-4 line-clamp-3 text-xs leading-6 text-[#111439]/65">
-            {previewText}
-          </p>
-
-          {!!actions.length && (
-            <div className="mb-4 space-y-2">
-              {actions.slice(0, 2).map((item, index) => (
-                <div key={item.id || index} className="rounded-xl bg-[#F8F8F9] p-3">
-                  <div className="flex items-start gap-2">
-                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white text-[#106EBE] ring-1 ring-[#111439]/5">
-                      <Rocket size={12} />
-                    </div>
-
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold leading-5 text-[#111439]">
-                        {item.title}
-                      </p>
-
-                      {(item.nextStep || item.reason) && (
-                        <p className="mt-0.5 line-clamp-2 text-[11px] leading-5 text-[#111439]/55">
-                          {item.nextStep || item.reason}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-2">
-            <Link
-              to="/career-guidance"
-              className="inline-flex items-center justify-center gap-1 rounded-xl bg-[#111439] px-3 py-2.5 text-xs font-semibold text-white transition hover:bg-[#1a1f54]"
-            >
-              View full plan
-              <ChevronRight size={12} />
-            </Link>
-
-            <button
-              type="button"
-              onClick={onGenerate}
-              disabled={loadingAi}
-              className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#106EBE]/20 bg-white px-3 py-2.5 text-xs font-semibold text-[#106EBE] transition hover:bg-[#106EBE] hover:text-white disabled:opacity-60"
-            >
-              {loadingAi ? 'Generating...' : 'Regenerate'}
-            </button>
-          </div>
-        </>
+            View full plan
+            <ChevronRight size={16} />
+          </Link>
+        </div>
       )}
     </div>
   );
@@ -1086,35 +795,14 @@ function CareerGuidancePreviewCard({ guidance, loadingAi, onGenerate }) {
 
 export default function DashboardPage() {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingAi, setLoadingAi] = useState(false);
-  const [message, setMessage] = useState('');
-  const [guidanceModalOpen, setGuidanceModalOpen] = useState(false);
-  const [guidanceForm, setGuidanceForm] = useState(EMPTY_GUIDANCE_FORM);
-  const [careerGuidance, setCareerGuidance] = useState(() => {
+const [loading, setLoading] = useState(true);
+const [message, setMessage] = useState('');
+
+async function load() {
   try {
-    return JSON.parse(localStorage.getItem('careerlens_career_guidance') || 'null');
-  } catch {
-    return null;
-  }
-});
+    setLoading(true);
 
-  async function load(useAi = false) {
-    try {
-    if (useAi) {
-      setLoadingAi(true);
-    } else {
-      setLoading(true);
-    }
-
-    const result = await fetchDashboard({ useAi });
-
-    if (useAi && result?.career_guidance) {
-      localStorage.setItem(
-        GUIDANCE_STORAGE_KEY,
-        JSON.stringify(result.career_guidance),
-      );
-    }
+    const result = await fetchDashboard();
 
     setData(result);
     setMessage('');
@@ -1122,41 +810,15 @@ export default function DashboardPage() {
     setMessage(getErrorMessage(error));
   } finally {
     setLoading(false);
-    setLoadingAi(false);
   }
 }
 
-  useEffect(() => {
-    load();
+useEffect(() => {
+  load();
 }, []);
 
-async function handleGenerateCareerGuidance(event) {
-  event.preventDefault();
-
-  const hasUsefulInput = Object.values(guidanceForm).some((value) => String(value || '').trim());
-
-  if (!hasUsefulInput) {
-    setMessage('Please add at least one career goal, target role, company, strength, weakness, or current struggle.');
-    return;
-  }
-
-  try {
-    setLoadingAi(true);
-    setMessage('');
-
-    const result = await generateCareerGuidance(guidanceForm);
-
-    setCareerGuidance(result);
-    localStorage.setItem('careerlens_career_guidance', JSON.stringify(result));
-    setGuidanceModalOpen(false);
-  } catch (error) {
-    setMessage(getErrorMessage(error));
-  } finally {
-    setLoadingAi(false);
-  }
-}
-
-  const latest = data?.latest_report || {};
+const latest = data?.latest_report || {};
+const careerActionPlan = data?.career_action_plan || null;
   const topMissing = toArray(data?.top_missing_keywords);
   const readinessRadar = toArray(latest?.readiness_radar);
   const distribution = toArray(data?.score_distribution);
@@ -1196,7 +858,7 @@ async function handleGenerateCareerGuidance(event) {
 
   if (loading) {
     return (
-      <div className="rounded-3xl bg-white p-10 text-center ring-1 ring-slate-200">
+      <div className="rounded-3xl bg-white p-10 text-center ring-1 ring-slate-200 mt-6 mx-4 sm:mx-8">
         <Loader2 className="mx-auto animate-spin text-[#106EBE]" size={30} />
         <p className="mt-3 text-sm font-semibold text-[#111439]/60">Loading dashboard...</p>
       </div>
@@ -1268,7 +930,7 @@ async function handleGenerateCareerGuidance(event) {
   ];
 
   return (
-    <div className="relative z-0 min-h-screen pb-12 font-['Inter',_ui-sans-serif,_system-ui,_sans-serif] text-slate-950 selection:bg-blue-100">
+    <div className="relative z-0 min-h-screen pb-12 pt-6 px-4 md:pt-0 md:px-0 font-['Inter',_ui-sans-serif,_system-ui,_sans-serif] text-slate-950 selection:bg-blue-100">
       <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[500px] w-full max-w-[800px] -translate-x-1/2 rounded-full bg-gradient-to-br from-[#106EBE]/5 to-[#0FFCBE]/5 blur-[120px]" />
 
       <header className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -1285,25 +947,24 @@ async function handleGenerateCareerGuidance(event) {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => setGuidanceModalOpen(true)}
-            disabled={loadingAi}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 shadow-sm transition-all duration-300 hover:bg-blue-50 disabled:opacity-60"
-          >
-            {loadingAi ? <Loader2 className="animate-spin" size={15} /> : <BrainCircuit size={15} />}
-            Generate career guidance
-          </button>
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
+  <Link
+    to={careerActionPlan?.status === 'success' ? '/career-guidance' : '/resumes'}
+    state={careerActionPlan?.status === 'success' ? { guidance: careerActionPlan } : undefined}
+    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 shadow-sm transition-all duration-300 hover:bg-blue-50"
+  >
+    <Compass size={15} />
+    {careerActionPlan?.status === 'success' ? 'View action plan' : 'Create action plan'}
+  </Link>
 
-          <Link
-            to="/jobs"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#111439] px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-[#111439]/20 transition-all duration-300 hover:bg-[#1a1f54]"
-          >
-            <span>Find New Roles</span>
-            <ChevronRight size={14} className="opacity-70" />
-          </Link>
-        </div>
+  <Link
+    to="/jobs"
+    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-[#111439] px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-[#111439]/20 transition-all duration-300 hover:bg-[#1a1f54]"
+  >
+    <span>Find New Roles</span>
+    <ChevronRight size={14} className="opacity-70" />
+  </Link>
+</div>
       </header>
 
       {message && (
@@ -1317,7 +978,7 @@ async function handleGenerateCareerGuidance(event) {
           <FileCheck2 size={16} className="text-[#106EBE]" />
           <h2 className="text-sm font-semibold text-[#111439]">Resume Intelligence</h2>
         </div>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {resumeKpis.map((kpi) => (
             <KpiCard key={kpi.label} {...kpi} />
           ))}
@@ -1329,7 +990,7 @@ async function handleGenerateCareerGuidance(event) {
           <Briefcase size={16} className="text-[#0D9476]" />
           <h2 className="text-sm font-semibold text-[#111439]">Application Pipeline</h2>
         </div>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {applicationKpis.map((kpi) => (
             <KpiCard key={kpi.label} {...kpi} />
           ))}
@@ -1339,7 +1000,7 @@ async function handleGenerateCareerGuidance(event) {
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
         <div className="space-y-8 xl:col-span-2">
           <section className="rounded-2xl border border-[#111439]/5 bg-white/60 p-6 shadow-sm backdrop-blur-md">
-            <div className="mb-6 flex items-center justify-between gap-4">
+            <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
               <div>
                 <h2 className="text-sm font-semibold text-[#111439]">
                   ATS Progress Velocity
@@ -1440,7 +1101,7 @@ async function handleGenerateCareerGuidance(event) {
           <div className="mb-2 flex items-center gap-2 px-1">
             <BrainCircuit size={16} className="text-[#106EBE]" />
             <h2 className="text-sm font-semibold text-[#111439]">
-              CareerLens AI Engine
+              CareerLens Workspace
             </h2>
           </div>
 
@@ -1494,11 +1155,7 @@ async function handleGenerateCareerGuidance(event) {
             tone="green"
           />
 
-          <CareerGuidancePanel
-            guidance={careerGuidance}
-            loading={loadingAi}
-            onOpen={() => setGuidanceModalOpen(true)}
-          />
+          <CareerActionPlanPanel plan={careerActionPlan} />
         </aside>
       </div>
 
@@ -1555,15 +1212,6 @@ async function handleGenerateCareerGuidance(event) {
           </div>
         </section>
       )}
-
-      <CareerGuidanceModal
-        open={guidanceModalOpen}
-        form={guidanceForm}
-        setForm={setGuidanceForm}
-        loading={loadingAi}
-        onClose={() => setGuidanceModalOpen(false)}
-        onSubmit={handleGenerateCareerGuidance}
-      />
     </div>
   );
 }

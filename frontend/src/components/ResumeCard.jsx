@@ -19,16 +19,16 @@ export default function ResumeCard({ resume, onUpdate, onDelete, onAnalyze, busy
       onMouseLeave={() => setConfirming(false)}
       className="bg-white border border-[#111439]/5 rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:border-[#106EBE]/30 hover:shadow-lg hover:shadow-[#111439]/5"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         
         {/* Left Side: Document Information */}
-        <div className="flex items-center gap-4 min-w-0 flex-1">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#106EBE]/10 to-[#0FFCBE]/10 text-[#106EBE]">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+          <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#106EBE]/10 to-[#0FFCBE]/10 text-[#106EBE]">
             <FileText size={20} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="truncate text-base font-bold text-[#111439]" title={resume.original_name}>
+              <h3 className="truncate text-sm sm:text-base font-bold text-[#111439]" title={resume.original_name}>
                 {resume.original_name}
               </h3>
               {resume.file_url && (
@@ -45,15 +45,15 @@ export default function ResumeCard({ resume, onUpdate, onDelete, onAnalyze, busy
             </div>
             
             {/* Simple Details Row */}
-            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#111439]/60 font-medium">
-              <span className="bg-[#F8F8F9] border border-[#111439]/5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest text-[#111439]">
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] sm:text-xs text-[#111439]/60 font-medium">
+              <span className="bg-[#F8F8F9] border border-[#111439]/5 px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#111439]">
                 {resume.file_type?.toUpperCase() || 'PDF'}
               </span>
               <span>•</span>
               <span>{formatFileSize(resume.file_size)}</span>
               <span>•</span>
               <span className="flex items-center gap-1 shrink-0">
-                <CalendarClock size={12} className="opacity-60" />
+                <CalendarClock size={10} className="sm:w-3 sm:h-3 opacity-60" />
                 <span>Added: {formatDateTime(resume.uploaded_at)}</span>
               </span>
             </div>
@@ -61,7 +61,7 @@ export default function ResumeCard({ resume, onUpdate, onDelete, onAnalyze, busy
         </div>
 
         {/* Right Side: Simple Actions */}
-        <div className="flex items-center gap-2 sm:gap-3 self-start sm:self-auto shrink-0">
+        <div className="flex w-full xl:w-auto items-center gap-2 sm:gap-3 shrink-0">
           <input
             ref={fileInputRef}
             type="file"
@@ -74,7 +74,7 @@ export default function ResumeCard({ resume, onUpdate, onDelete, onAnalyze, busy
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={busy}
-            className="h-10 px-3 sm:px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-white border border-[#111439]/10 text-xs sm:text-sm font-bold text-[#111439] hover:bg-[#F8F8F9] transition-all disabled:opacity-50 shadow-sm"
+            className="flex-1 xl:flex-none h-10 px-3 sm:px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-white border border-[#111439]/10 text-xs sm:text-sm font-bold text-[#111439] hover:bg-[#F8F8F9] transition-all disabled:opacity-50 shadow-sm"
           >
             <RefreshCw size={14} />
             <span className="hidden sm:inline">Replace</span>
@@ -87,10 +87,10 @@ export default function ResumeCard({ resume, onUpdate, onDelete, onAnalyze, busy
               else setConfirming(true);
             }}
             disabled={busy}
-            className={`h-10 px-3 sm:px-4 inline-flex items-center justify-center gap-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all disabled:opacity-50 ${
+            className={`flex-1 xl:flex-none h-10 px-3 sm:px-4 inline-flex items-center justify-center gap-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all disabled:opacity-50 shadow-sm ${
               confirming 
-                ? 'bg-red-500 text-white hover:bg-red-600 shadow-sm' 
-                : 'bg-white border border-red-500/20 text-red-600 hover:bg-red-50 shadow-sm'
+                ? 'bg-red-500 text-white hover:bg-red-600' 
+                : 'bg-white border border-red-500/20 text-red-600 hover:bg-red-50'
             }`}
           >
             <Trash2 size={14} />
@@ -101,7 +101,7 @@ export default function ResumeCard({ resume, onUpdate, onDelete, onAnalyze, busy
             type="button"
             onClick={() => onAnalyze(resume.id)}
             disabled={busy}
-            className="h-10 px-4 sm:px-5 inline-flex items-center justify-center gap-2 rounded-xl bg-[#111439] text-xs sm:text-sm font-bold text-white shadow-lg shadow-[#111439]/20 hover:bg-[#1a1f54] hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:hover:translate-y-0"
+            className="flex-1 xl:flex-none h-10 px-4 sm:px-5 inline-flex items-center justify-center gap-2 rounded-xl bg-[#111439] text-xs sm:text-sm font-bold text-white shadow-lg shadow-[#111439]/20 hover:bg-[#1a1f54] hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:hover:translate-y-0"
           >
             <WandSparkles size={14} className="text-[#0FFCBE]" />
             <span>Analyze</span>

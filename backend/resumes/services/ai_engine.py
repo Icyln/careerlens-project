@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from typing import Any
+import time
 
 from django.conf import settings
 
@@ -12,6 +14,8 @@ try:
 except Exception:  # pragma: no cover
     genai = None
     types = None
+
+logger = logging.getLogger(__name__)
 
 MAX_RESUME_CHARS = 14000
 MAX_JOB_DESCRIPTION_CHARS = 9000
@@ -53,6 +57,101 @@ def strip_json_code_fence(text: str) -> str:
         return text[first:last + 1]
     return text
 
+def _configured_gemini_api_keys() -> list[str]:
+    raw_values = [
+        getattr(settings, 'GEMINI_API_KEYS', []),
+        getattr(settings, 'GEMINI_API_KEY', ''),
+        getattr(settings, 'GEMINI_API_KEY_2', ''),
+        getattr(settings, 'GEMINI_API_KEY_3', ''),
+    ]
+    keys: list[str] = []
+
+    for value in raw_values:
+        values = value if isinstance(value, (list, tuple, set)) else str(value).split(',')
+
+        for item in values:
+            key = str(item or '').strip()
+
+            if key and key not in keys:
+                keys.append(key)
+
+    return keys
+
+
+def _gemini_retry_attempts() -> int:
+    try:
+        return max(1, int(getattr(settings, 'GEMINI_RETRY_ATTEMPTS', 1) or 1))
+    except (TypeError, ValueError):
+        return 1
+
+
+def _gemini_key_switch_delay_seconds() -> int:
+    try:
+        return max(0, int(getattr(settings, 'GEMINI_KEY_SWITCH_DELAY_SECONDS', 2) or 0))
+    except (TypeError, ValueError):
+        return 2
+
+
+def _rotate_api_keys(api_keys: list[str]) -> list[str]:
+    if len(api_keys) <= 1:
+        return api_keys
+
+    start_index = time.monotonic_ns() % len(api_keys)
+    return api_keys[start_index:] + api_keys[:start_index]
+
+
+def _generate_gemini_json_with_key_fallback(
+    *,
+    contents: str,
+    model: str,
+    temperature: float,
+    error_label: str,
+) -> dict[str, Any]:
+    api_keys = _rotate_api_keys(_configured_gemini_api_keys())
+
+    if not api_keys:
+        raise RuntimeError('No Gemini API keys are configured on the backend.')
+
+    errors: list[str] = []
+    model = model or getattr(settings, 'GEMINI_MODEL', 'gemini-2.5-flash-lite')
+    attempts_per_key = _gemini_retry_attempts()
+    delay_seconds = _gemini_key_switch_delay_seconds()
+
+    for attempt in range(1, attempts_per_key + 1):
+        for key_index, api_key in enumerate(api_keys, start=1):
+            try:
+                client = genai.Client(api_key=api_key)
+                response = client.models.generate_content(
+                    model=model,
+                    contents=contents,
+                    config=types.GenerateContentConfig(
+                        temperature=temperature,
+                        response_mime_type='application/json',
+                    ),
+                )
+
+                text = getattr(response, 'text', '') or ''
+                payload = json.loads(strip_json_code_fence(text))
+
+                if not isinstance(payload, dict):
+                    raise ValueError('Gemini returned JSON that is not an object.')
+
+                return payload
+
+            except Exception as exc:
+                errors.append(f'key #{key_index}, attempt #{attempt}: {exc}')
+
+                has_next_key = key_index < len(api_keys)
+                has_next_attempt = attempt < attempts_per_key
+
+                if delay_seconds and (has_next_key or has_next_attempt):
+                    time.sleep(delay_seconds)
+
+    last_error = errors[-1] if errors else 'unknown error'
+    raise RuntimeError(
+        f'{error_label} failed after {len(errors)} request attempt(s) '
+        f'across {len(api_keys)} Gemini API key(s). Last error: {last_error}'
+    )
 
 def humanize_ai_item(item: Any, preferred_keys: list[str] | None = None) -> str:
     """Convert Gemini list items into user-friendly plain text.
@@ -138,59 +237,66 @@ Resume text:
 """.strip()
 
 
-def local_unavailable_result(message: str) -> dict[str, Any]:
+def local_unavailable_result(message: str = '') -> dict[str, Any]:
+    if message:
+        logger.warning('CareerLens AI analysis unavailable: %s', message)
+
     return merge_with_defaults(
         {
-            'summary_10_second_read': 'Gemini AI analysis is not available for this request. The rule-based ATS report can still be used independently.',
+            'summary_10_second_read': (
+                'Enhanced recruiter review is temporarily unavailable, but your ATS scan was completed successfully.'
+            ),
             'alignment_explanation': {
-                'level': 'Unknown',
-                'explanation': message,
-                },
-            'recommendations': [
-                'Add a Gemini API key to enable recruiter-style AI analysis.',
-                'Use the rule-based ATS section scores to identify technical keyword, contact, experience, education, and formatting issues.',
+                'level': 'Not available',
+                'explanation': (
+                    'The rule-based ATS score, keyword checks, formatting review, and recommendations are ready. '
+                    'You can continue using these results and try the enhanced review again later.'
+                ),
+            },
+            'strengths': [
+                'The ATS scan completed successfully.',
+                'Your score, checklist, and top fixes are still available.',
             ],
-            'message': message,
+            'weaknesses': [],
+            'recommendations': [
+                'Start with the Top 3 Fixes shown in the ATS report.',
+                'Review the Detailed Checklist for missing skills, title match, formatting, and contact information.',
+                'After editing your resume, run the scan again to compare the new result.',
+            ],
+            'tailoring_suggestions': [
+                'Use only truthful skills and experience when applying the ATS recommendations.',
+            ],
+            'visualization': [],
+            'message': (
+                'Enhanced recruiter review is temporarily unavailable. The ATS report was completed successfully.'
+            ),
         },
-        status='unavailable',
+        status='fallback',
     )
 
 
 def generate_ai_analysis(resume_text: str, job_title: str, job_description: str) -> dict[str, Any]:
-    if not settings.GEMINI_API_KEY:
-        return local_unavailable_result('GEMINI_API_KEY is not configured on the backend.')
+    if not _configured_gemini_api_keys():
+        return local_unavailable_result('No Gemini API keys are configured on the backend.')
+
     if genai is None or types is None:
         return local_unavailable_result('google-genai is not installed in the backend environment.')
 
     try:
-        client = genai.Client(api_key=settings.GEMINI_API_KEY)
-        response = client.models.generate_content(
-            model=settings.GEMINI_MODEL,
+        payload = _generate_gemini_json_with_key_fallback(
+            model=getattr(settings, 'GEMINI_MODEL', 'gemini-2.5-flash-lite'),
             contents=build_prompt(resume_text, job_title, job_description),
-            config=types.GenerateContentConfig(
-                temperature=0.25,
-                response_mime_type='application/json',
-            ),
+            temperature=0.25,
+            error_label='Gemini ATS AI analysis',
         )
-        text = getattr(response, 'text', '') or ''
-        payload = json.loads(strip_json_code_fence(text))
-        if not isinstance(payload, dict):
-            raise ValueError('Gemini returned JSON that is not an object.')
         return merge_with_defaults(payload, status='success')
-    except Exception as exc:
-        return merge_with_defaults(
-            {
-                'summary_10_second_read': 'AI analysis could not be generated for this request, but the ATS report was completed independently.',
-                'alignment_explanation': {
-                    'level': 'Unknown',
-                    'explanation': f'Gemini request failed: {exc}',
-                },
-                'recommendations': ['Check the backend logs, GEMINI_API_KEY, model name, and network/API quota settings.'],
-                'message': str(exc),
-            },
-            status='error',
-        )
 
+    except Exception as exc:
+        logger.exception(
+            'CareerLens Gemini ATS AI analysis failed. Technical details are hidden from users. Error: %s',
+            exc,
+        )
+        return local_unavailable_result('Gemini ATS AI analysis failed after configured key attempts.')
 
 DEFAULT_TAILOR_RESULT: dict[str, Any] = {
     'engine': 'gemini_tailor_resume',
@@ -780,21 +886,26 @@ Original resume text:
 """.strip()
 
 
-def local_tailor_unavailable_result(message: str, resume_text: str = '') -> dict[str, Any]:
+def local_tailor_unavailable_result(message: str = '', resume_text: str = '') -> dict[str, Any]:
+    if message:
+        logger.warning('CareerLens resume tailoring unavailable: %s', message)
+
     return merge_tailor_defaults(
         {
             'tailored_resume_text': resume_text,
             'structured_resume': {},
             'change_summary': [],
             'safety_notes': [
-                'AI tailoring is unavailable. The original extracted resume text is shown instead.',
-                'Review all resume changes manually before applying.',
+                'Enhanced resume tailoring is temporarily unavailable. The original extracted resume text is shown instead.',
+                'Review and edit the resume manually before applying.',
             ],
-            'message': message,
+            'message': (
+                'Enhanced resume tailoring is temporarily unavailable. '
+                'Your original resume text is still available so you can continue editing manually.'
+            ),
         },
-        status='unavailable',
+        status='fallback',
     )
-
 
 def generate_tailored_resume(
     resume_text: str,
@@ -804,8 +915,8 @@ def generate_tailored_resume(
     selected_template: str = 'classic_ats',
     confirmed_keywords: dict[str, list[str]] | None = None,
 ) -> dict[str, Any]:
-    if not settings.GEMINI_API_KEY:
-        result = local_tailor_unavailable_result('GEMINI_API_KEY is not configured on the backend.', resume_text)
+    if not _configured_gemini_api_keys():
+        result = local_tailor_unavailable_result('No Gemini API keys are configured on the backend.', resume_text)
         result['template'] = selected_template
         return result
     if genai is None or types is None:
@@ -814,43 +925,47 @@ def generate_tailored_resume(
         return result
 
     try:
-        client = genai.Client(api_key=settings.GEMINI_API_KEY)
-        response = client.models.generate_content(
-            model=settings.GEMINI_MODEL,
-            contents=build_tailor_prompt(resume_text, job_title, job_description, ats_result, selected_template, confirmed_keywords),
-            config=types.GenerateContentConfig(
-                temperature=0.15,
-                response_mime_type='application/json',
+        payload = _generate_gemini_json_with_key_fallback(
+            model=getattr(settings, 'GEMINI_MODEL', 'gemini-2.5-flash-lite'),
+            contents=build_tailor_prompt(
+                resume_text,
+                job_title,
+                job_description,
+                ats_result,
+                selected_template,
+                confirmed_keywords,
             ),
+            temperature=0.15,
+            error_label='Gemini resume tailoring',
         )
-        text = getattr(response, 'text', '') or ''
-        payload = json.loads(strip_json_code_fence(text))
-        if not isinstance(payload, dict):
-            raise ValueError('Gemini returned JSON that is not an object.')
         result = merge_tailor_defaults(payload, status='success')
         result['template'] = selected_template
         result = ensure_confirmed_skill_keywords(result, confirmed_keywords)
+
         if not result.get('tailored_resume_text'):
-            result['tailored_resume_text'] = render_tailored_resume_text(result.get('structured_resume') or {}, resume_text)
-            result['safety_notes'].append('Gemini did not return tailored text, so CareerLens rendered the structured resume or original text.')
+            result['tailored_resume_text'] = render_tailored_resume_text(
+                result.get('structured_resume') or {},
+                resume_text,
+            )
+            result['safety_notes'].append(
+                'The enhanced tailoring service returned an incomplete draft, so CareerLens rendered the available resume content.'
+            )
+
         return result
+    
     except Exception as exc:
-        return merge_tailor_defaults(
-            {
-                'template': selected_template,
-                'tailored_resume_text': resume_text,
-                'structured_resume': {},
-                'change_summary': [],
-                'safety_notes': [
-                    'AI tailoring could not be generated. The original extracted resume text is shown instead.',
-                    'Check the backend logs, GEMINI_API_KEY, model name, and network/API quota settings.',
-                ],
-                'message': f'Gemini tailoring request failed: {exc}',
-            },
-            status='error',
+        logger.exception(
+           'CareerLens resume tailoring failed. Technical details are hidden from users. Error: %s',
+        exc,
+       )
+
+        result = local_tailor_unavailable_result(
+            'Gemini resume tailoring failed after configured key attempts.',
+            resume_text,
         )
-
-
+        result['template'] = selected_template
+        return result
+    
 def local_dashboard_guidance(metrics: dict[str, Any]) -> dict[str, Any]:
     latest = metrics.get('latest_report') or {}
     missing = metrics.get('top_missing_keywords') or []
@@ -872,10 +987,10 @@ def local_dashboard_guidance(metrics: dict[str, Any]) -> dict[str, Any]:
 
 
 def generate_dashboard_guidance(metrics: dict[str, Any], use_ai: bool = False) -> dict[str, Any]:
-    if not use_ai or not settings.GEMINI_API_KEY or genai is None or types is None:
+    if not use_ai or not _configured_gemini_api_keys() or genai is None or types is None:
         return local_dashboard_guidance(metrics)
+
     try:
-        client = genai.Client(api_key=settings.GEMINI_API_KEY)
         prompt = f"""
 You are CareerLens Career Guidance AI. Based on the user's dashboard metrics, provide practical career guidance.
 Do not invent personal facts. Do not mention private data. Return only JSON with keys: status, headline, recommendations, next_steps.
@@ -884,21 +999,23 @@ recommendations and next_steps must be arrays of concise plain strings.
 Dashboard metrics:
 {json.dumps(metrics, ensure_ascii=False)[:10000]}
 """.strip()
-        response = client.models.generate_content(
-            model=settings.GEMINI_MODEL,
+
+        payload = _generate_gemini_json_with_key_fallback(
+            model=getattr(settings, 'GEMINI_MODEL', 'gemini-2.5-flash-lite'),
             contents=prompt,
-            config=types.GenerateContentConfig(temperature=0.25, response_mime_type='application/json'),
+            temperature=0.25,
+            error_label='Gemini dashboard guidance',
         )
-        payload = json.loads(strip_json_code_fence(getattr(response, 'text', '') or ''))
-        if not isinstance(payload, dict):
-            raise ValueError('Gemini returned invalid dashboard guidance JSON.')
+
         return {
             'status': 'success',
             'headline': _clean_string(payload.get('headline')),
             'recommendations': normalize_ai_list(payload.get('recommendations')),
             'next_steps': normalize_ai_list(payload.get('next_steps')),
         }
+
     except Exception as exc:
         result = local_dashboard_guidance(metrics)
-        result['message'] = f'Gemini dashboard guidance failed: {exc}'
+        result['message'] = 'Gemini dashboard guidance is temporarily unavailable after all configured key attempts.'
+        result['debug_message'] = str(exc)
         return result

@@ -1,20 +1,43 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, UserPlus } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  FileText,
+  Layers3,
+  Loader2,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+  UserPlus,
+  UserRound,
+} from 'lucide-react';
+
 import Alert from '../components/Alert.jsx';
 import { getErrorMessage } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
-// Reusable icon for the decorative column
-const CheckIcon = () => (
-  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path>
-  </svg>
-);
+function FeatureRow({ icon: Icon, title, text }) {
+  return (
+    <div className="flex gap-3">
+      <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-[#0FFCBE] ring-1 ring-white/10">
+        <Icon size={18} />
+      </div>
+
+      <div>
+        <p className="text-sm font-semibold text-white">{title}</p>
+        <p className="mt-1 text-sm leading-6 text-white/60">{text}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { signup } = useAuth();
+  const { signup, loginWithGoogle } = useAuth();
 
   const [form, setForm] = useState({
     username: '',
@@ -26,7 +49,25 @@ export default function SignupPage() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [message, setMessage] = useState(null);
+
+  const passwordChecks = useMemo(() => {
+    const password = form.password || '';
+
+    return [
+      {
+        label: 'At least 8 characters',
+        ok: password.length >= 8,
+      },
+      {
+        label: 'Passwords match',
+        ok: Boolean(password && form.password_confirm && password === form.password_confirm),
+      },
+    ];
+  }, [form.password, form.password_confirm]);
 
   function updateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -47,194 +88,304 @@ export default function SignupPage() {
     }
   }
 
+  async function handleGoogleSuccess(credential) {
+    if (!credential) {
+      setMessage({ type: 'error', text: 'Google did not return a valid credential.' });
+      return;
+    }
+
+    try {
+      setGoogleLoading(true);
+      setMessage(null);
+      await loginWithGoogle(credential);
+      navigate('/dashboard', { replace: true });
+    } catch (error) {
+      setMessage({ type: 'error', text: getErrorMessage(error) });
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
+
+  const inputClass =
+    'block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-medium text-[#111439] shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#106EBE] focus:ring-4 focus:ring-[#106EBE]/10';
+
   return (
-    <div className="flex min-h-screen bg-[#F8F8F9] text-[#111439] antialiased selection:bg-[#0FFCBE]/30 font-['CoFo_Sans',_Inter,_sans-serif]">
-      
-      {/* LEFT COLUMN: BRANDING (Hidden on Mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#111439] relative overflow-hidden items-center justify-center p-12">
-        {/* Ambient Glows */}
-        <div className="absolute top-1/4 -left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-[#106EBE] to-[#0FFCBE] opacity-20 blur-[120px] rounded-full mix-blend-screen pointer-events-none"></div>
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#106EBE] opacity-30 blur-[100px] rounded-full pointer-events-none"></div>
-        
-        {/* Abstract Tech Background Pattern */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
+    <main className="min-h-screen bg-[#F8F8F9] font-['Inter',_ui-sans-serif,_system-ui,_sans-serif] text-[#111439]">
+      <div className="grid min-h-screen lg:grid-cols-[0.95fr_1.05fr]">
+        <aside className="hidden bg-[#111439] px-10 py-10 lg:flex">
+          <div className="flex w-full flex-col justify-start rounded-[2rem] border border-white/10 bg-[#151943] p-10 pt-16">
+            <div>
+              <h2 className="max-w-xl text-5xl font-semibold tracking-tight text-white">
+                Build a better application system.
+              </h2>
 
-        <div className="relative z-10 w-full max-w-md">
-          <Link to="/" className="inline-flex items-center gap-2.5 group mb-12 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#106EBE] to-[#0FFCBE] flex items-center justify-center shadow-lg shadow-[#106EBE]/20 transform transition-transform group-hover:scale-105">
-              <div className="w-4 h-4 rounded-full border-2 border-white flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+              <p className="mt-5 max-w-md text-base leading-7 text-white/60">
+                Upload resumes, analyze job descriptions, improve match quality, and keep your job search organized in one workspace.
+              </p>
+
+              <div className="mt-10 grid gap-5">
+                <FeatureRow
+                  icon={FileText}
+                  title="ATS-ready resume workflow"
+                  text="Scan your resume against job descriptions and find practical gaps."
+                />
+
+                <FeatureRow
+                  icon={Layers3}
+                  title="Tailored application materials"
+                  text="Generate role-focused resumes and cover letters that stay truthful."
+                />
+
+                <FeatureRow
+                  icon={ShieldCheck}
+                  title="Private career workspace"
+                  text="Your dashboards, reports, and applications stay connected to your account."
+                />
               </div>
-            </div>
-            <span className="text-3xl font-extrabold tracking-tight text-white">
-              Career<span className="text-[#0FFCBE]">Lens</span>
-            </span>
-          </Link>
 
-          <h2 className="text-4xl xl:text-5xl font-extrabold text-white tracking-tight mb-6 leading-[1.1]">
-            Stop guessing.<br/> Start measuring.
-          </h2>
-          <p className="text-white/60 text-base leading-relaxed mb-12 max-w-sm">
-            Uncover exactly why recruiters reject you, automatically optimize your phrasing, and dominate your job hunt.
-          </p>
-
-          {/* Floating Glassmorphism Element */}
-          <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-8 shadow-2xl transform transition-transform hover:-translate-y-2 duration-700">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-5">ATS Context Engine</p>
-            <div className="flex flex-wrap gap-3">
-              <span className="px-3 py-2 bg-[#0FFCBE]/20 text-[#0FFCBE] text-xs font-bold rounded-xl border border-[#0FFCBE]/30 flex items-center gap-2 shadow-sm">
-                <CheckIcon /> Go-to-Market Strategy
-              </span>
-              <span className="px-3 py-2 bg-[#0FFCBE]/20 text-[#0FFCBE] text-xs font-bold rounded-xl border border-[#0FFCBE]/30 flex items-center gap-2 shadow-sm">
-                <CheckIcon /> Agile Leadership
-              </span>
-              <span className="px-3 py-2 bg-white/5 text-white/40 text-xs font-bold rounded-xl border border-white/10 flex items-center gap-2 line-through decoration-red-500/50">
-                Managed a team
-              </span>
+              <div className="mt-12 grid grid-cols-3 gap-3">
+                {[
+                  ['ATS', 'Match scan'],
+                  ['AI', 'Guidance'],
+                  ['Jobs', 'Tracker'],
+                ].map(([title, label]) => (
+                  <div key={title} className="rounded-2xl bg-white/10 p-4 ring-1 ring-white/10">
+                    <p className="text-lg font-semibold text-white">{title}</p>
+                    <p className="mt-1 text-xs text-white/50">{label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+        </aside>
 
-        </div>
-      </div>
+        <section className="flex items-center justify-center px-5 py-8 sm:px-8 lg:px-12">
+          <div className="w-full max-w-[560px]">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/60 sm:p-8">
+              <div className="mb-7">
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#106EBE]/10 px-3 py-1.5 text-xs font-semibold text-[#106EBE]">
+                  <UserPlus size={14} />
+                  Create account
+                </span>
 
-      {/* RIGHT COLUMN: FORM */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-12 xl:px-24 relative z-10 py-12 lg:py-0">
-        <div className="w-full max-w-lg mx-auto">
-          
-          {/* Logo (Visible on mobile, hidden on desktop since it's on left side) */}
-          <Link to="/" className="lg:hidden inline-flex items-center gap-2.5 group mb-8 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#106EBE] to-[#0FFCBE] flex items-center justify-center shadow-md">
-              <div className="w-3.5 h-3.5 rounded-full border-2 border-white flex items-center justify-center">
-                <div className="w-1 h-1 bg-white rounded-full"></div>
+                <h1 className="mt-5 text-3xl font-semibold tracking-tight text-[#111439] sm:text-4xl">
+                  Start your CareerLens workspace
+                </h1>
+
+                <p className="mt-3 text-sm leading-6 text-slate-500">
+                  Create your account for resume analysis, job tracking, cover letters, and interview preparation.
+                </p>
               </div>
+
+              {message && (
+                <div className="mb-5">
+                  <Alert type={message.type} onClose={() => setMessage(null)}>
+                    {message.text}
+                  </Alert>
+                </div>
+              )}
+
+              <div className="mb-5">
+                <GoogleLogin
+                  onSuccess={(credentialResponse) => handleGoogleSuccess(credentialResponse.credential)}
+                  onError={() => setMessage({ type: 'error', text: 'Google sign up was cancelled or failed.' })}
+                  text="signup_with"
+                  shape="pill"
+                  size="large"
+                  width="100%"
+                  useOneTap={false}
+                />
+
+                {googleLoading && (
+                  <div className="mt-3 flex items-center justify-center gap-2 text-xs font-semibold text-slate-500">
+                    <Loader2 size={14} className="animate-spin" />
+                    Creating your Google session...
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-5 flex items-center gap-3">
+                <div className="h-px flex-1 bg-slate-200" />
+                <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+                  or sign up with email
+                </span>
+                <div className="h-px flex-1 bg-slate-200" />
+              </div>
+
+              <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">
+                    First name
+                  </label>
+
+                  <input
+                    value={form.first_name}
+                    onChange={(event) => updateField('first_name', event.target.value)}
+                    className={inputClass}
+                    placeholder="Myat"
+                    autoComplete="given-name"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">
+                    Last name
+                  </label>
+
+                  <input
+                    value={form.last_name}
+                    onChange={(event) => updateField('last_name', event.target.value)}
+                    className={inputClass}
+                    placeholder="Htun"
+                    autoComplete="family-name"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">
+                    Email address
+                  </label>
+
+                  <div className="relative">
+                    <Mail
+                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                      size={18}
+                    />
+
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(event) => updateField('email', event.target.value)}
+                      className={`${inputClass} pl-11`}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">
+                    Username
+                  </label>
+
+                  <div className="relative">
+                    <UserRound
+                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                      size={18}
+                    />
+
+                    <input
+                      value={form.username}
+                      onChange={(event) => updateField('username', event.target.value)}
+                      className={`${inputClass} pl-11`}
+                      placeholder="Choose a username"
+                      autoComplete="username"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">
+                    Password
+                  </label>
+
+                  <div className="relative">
+                    <LockKeyhole
+                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                      size={18}
+                    />
+
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={form.password}
+                      onChange={(event) => updateField('password', event.target.value)}
+                      className={`${inputClass} px-11`}
+                      placeholder="Minimum 8 characters"
+                      autoComplete="new-password"
+                      required
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[#111439]"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">
+                    Confirm password
+                  </label>
+
+                  <div className="relative">
+                    <LockKeyhole
+                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                      size={18}
+                    />
+
+                    <input
+                      type={showPasswordConfirm ? 'text' : 'password'}
+                      value={form.password_confirm}
+                      onChange={(event) => updateField('password_confirm', event.target.value)}
+                      className={`${inputClass} px-11`}
+                      placeholder="Repeat password"
+                      autoComplete="new-password"
+                      required
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswordConfirm((current) => !current)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[#111439]"
+                      aria-label={showPasswordConfirm ? 'Hide password' : 'Show password'}
+                    >
+                      {showPasswordConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <div className="grid gap-2 rounded-2xl bg-slate-50 p-4 sm:grid-cols-2">
+                    {passwordChecks.map((check) => (
+                      <div
+                        key={check.label}
+                        className={`flex items-center gap-2 text-xs font-semibold ${
+                          check.ok ? 'text-emerald-700' : 'text-slate-400'
+                        }`}
+                      >
+                        <CheckCircle2 size={15} />
+                        {check.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || googleLoading}
+                  className="group mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#111439] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#111439]/20 transition hover:-translate-y-0.5 hover:bg-[#1f244f] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:col-span-2"
+                >
+                  {loading ? <Loader2 className="animate-spin" size={18} /> : <ArrowRight size={18} />}
+                  Create account
+                </button>
+              </form>
+
+              <p className="mt-7 text-center text-sm text-slate-500">
+                Already have an account?{' '}
+                <Link to="/login" className="font-semibold text-[#106EBE] transition hover:text-[#0b5797]">
+                  Sign in
+                </Link>
+              </p>
             </div>
-            <span className="text-2xl font-extrabold tracking-tight text-[#111439]">
-              Career<span className="bg-clip-text text-transparent bg-gradient-to-r from-[#106EBE] to-[#0FFCBE]">Lens</span>
-            </span>
-          </Link>
-
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#111439] tracking-tight mb-2">
-            Create your account
-          </h1>
-          <p className="text-sm text-[#111439]/60 mb-8 leading-relaxed">
-            Setup takes 2 minutes. Start tailoring your resumes and tracking your applications effortlessly.
-          </p>
-
-          {message && (
-            <div className="mb-6">
-              <Alert type={message.type} onClose={() => setMessage(null)}>
-                {message.text}
-              </Alert>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="grid gap-5 sm:grid-cols-2">
-            
-            <div className="sm:col-span-1">
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-[#111439]/70 mb-2 pl-1">
-                First Name
-              </label>
-              <input
-                value={form.first_name}
-                onChange={(event) => updateField('first_name', event.target.value)}
-                className="block w-full rounded-2xl border border-[#111439]/10 bg-white px-5 py-3.5 text-sm font-medium text-[#111439] placeholder-[#111439]/30 shadow-sm focus:border-[#106EBE] focus:outline-none focus:ring-4 focus:ring-[#106EBE]/10 transition-all duration-300"
-                placeholder="e.g. John"
-                autoComplete="given-name"
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-[#111439]/70 mb-2 pl-1">
-                Last Name
-              </label>
-              <input
-                value={form.last_name}
-                onChange={(event) => updateField('last_name', event.target.value)}
-                className="block w-full rounded-2xl border border-[#111439]/10 bg-white px-5 py-3.5 text-sm font-medium text-[#111439] placeholder-[#111439]/30 shadow-sm focus:border-[#106EBE] focus:outline-none focus:ring-4 focus:ring-[#106EBE]/10 transition-all duration-300"
-                placeholder="e.g. Doe"
-                autoComplete="family-name"
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-[#111439]/70 mb-2 pl-1">
-                Username
-              </label>
-              <input
-                value={form.username}
-                onChange={(event) => updateField('username', event.target.value)}
-                className="block w-full rounded-2xl border border-[#111439]/10 bg-white px-5 py-3.5 text-sm font-medium text-[#111439] placeholder-[#111439]/30 shadow-sm focus:border-[#106EBE] focus:outline-none focus:ring-4 focus:ring-[#106EBE]/10 transition-all duration-300"
-                placeholder="Choose a username"
-                autoComplete="username"
-                required
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-[#111439]/70 mb-2 pl-1">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(event) => updateField('email', event.target.value)}
-                className="block w-full rounded-2xl border border-[#111439]/10 bg-white px-5 py-3.5 text-sm font-medium text-[#111439] placeholder-[#111439]/30 shadow-sm focus:border-[#106EBE] focus:outline-none focus:ring-4 focus:ring-[#106EBE]/10 transition-all duration-300"
-                placeholder="you@example.com"
-                autoComplete="email"
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-[#111439]/70 mb-2 pl-1">
-                Password
-              </label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(event) => updateField('password', event.target.value)}
-                className="block w-full rounded-2xl border border-[#111439]/10 bg-white px-5 py-3.5 text-sm font-medium text-[#111439] placeholder-[#111439]/30 shadow-sm focus:border-[#106EBE] focus:outline-none focus:ring-4 focus:ring-[#106EBE]/10 transition-all duration-300"
-                placeholder="Minimum 8 characters"
-                autoComplete="new-password"
-                required
-              />
-            </div>
-
-            <div className="sm:col-span-1">
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-[#111439]/70 mb-2 pl-1">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                value={form.password_confirm}
-                onChange={(event) => updateField('password_confirm', event.target.value)}
-                className="block w-full rounded-2xl border border-[#111439]/10 bg-white px-5 py-3.5 text-sm font-medium text-[#111439] placeholder-[#111439]/30 shadow-sm focus:border-[#106EBE] focus:outline-none focus:ring-4 focus:ring-[#106EBE]/10 transition-all duration-300"
-                placeholder="Repeat password"
-                autoComplete="new-password"
-                required
-              />
-            </div>
-
-            <div className="sm:col-span-2 pt-4">
-              <button
-                type="submit"
-                disabled={loading}
-                className="relative flex w-full justify-center items-center gap-2 rounded-2xl bg-gradient-to-r from-[#106EBE] to-[#0FFCBE] px-4 py-4 text-sm font-bold text-white shadow-xl shadow-[#106EBE]/20 hover:scale-[1.01] hover:shadow-[#106EBE]/30 transition-all duration-300 disabled:opacity-60 disabled:hover:scale-100 overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                {loading ? <Loader2 className="animate-spin" size={18} /> : <UserPlus size={18} />}
-                <span className="relative z-10">Start Using Free</span>
-              </button>
-            </div>
-          </form>
-
-          <p className="mt-8 text-center text-xs font-bold text-[#111439]/60">
-            Already have an account?{' '}
-            <Link to="/login" className="text-[#106EBE] hover:text-[#0FFCBE] transition-colors duration-300">
-              Login
-            </Link>
-          </p>
-        </div>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

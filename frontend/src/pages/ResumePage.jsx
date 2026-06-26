@@ -71,7 +71,7 @@ export default function ResumePage() {
   };
 
   return (
-    <div className="space-y-6 relative font-['Inter',_ui-sans-serif,_system-ui,_sans-serif] text-[#111439] min-h-screen pb-12 selection:bg-[#0FFCBE]/30 bg-[#F8F8F9] z-0 overflow-hidden">
+    <div className="space-y-6 relative font-['Inter',_ui-sans-serif,_system-ui,_sans-serif] text-[#111439] min-h-screen pb-12 pt-6 px-4 md:pt-0 md:px-0 selection:bg-[#0FFCBE]/30 bg-[#F8F8F9] z-0 overflow-hidden">
       
       {/* Soft Ambient Background Glows (Matching Landing Page exactly) */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] max-w-[800px] h-[600px] bg-gradient-to-br from-[#106EBE]/10 to-[#0FFCBE]/10 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
@@ -84,7 +84,7 @@ export default function ResumePage() {
               <UserRoundPen size={14} />
               Upload Resume
               </div>   
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
+            <h1 className="mt-4 text-2xl sm:text-3xl font-semibold tracking-tight text-slate-950">
               Manage Your Resumes
             </h1>
             
@@ -94,7 +94,7 @@ export default function ResumePage() {
           </div>
 
           {/* Simple Metric Row */}
-          <div className="mt-8 grid gap-4 grid-cols-3">
+          <div className="mt-8 grid gap-4 grid-cols-1 sm:grid-cols-3">
             <div className="rounded-2xl bg-[#F8F8F9] border border-[#111439]/5 p-4 transition-colors hover:bg-white hover:border-[#106EBE]/20">
               <div className="flex items-center gap-2 text-[#106EBE]">
                 <Database size={16} />
@@ -135,12 +135,12 @@ export default function ResumePage() {
 
       {/* Resumes List */}
       <section className="relative z-10">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#111439]">Your Saved Resumes</h2>
             <p className="text-xs sm:text-sm text-[#111439]/60 mt-1">Choose a resume below to see how well it matches a job.</p>
           </div>
-          <div className="rounded-xl bg-white border border-[#111439]/10 px-4 py-2 text-xs sm:text-sm font-semibold text-[#111439]/70 shadow-sm flex items-center gap-2">
+          <div className="self-start sm:self-auto rounded-xl bg-white border border-[#111439]/10 px-4 py-2 text-xs sm:text-sm font-semibold text-[#111439]/70 shadow-sm flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#106EBE]"></span>
             <span>Storage Used: {(totalStorage / 1024 / 1024).toFixed(2)} MB</span>
           </div>
@@ -166,8 +166,8 @@ export default function ResumePage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-3xl border border-dashed border-[#111439]/20 bg-white p-12 text-center max-w-lg mx-auto mt-8 shadow-sm">
-            <h3 className="text-lg font-extrabold text-[#111439]">No resumes uploaded yet</h3>
+          <div className="rounded-3xl border border-dashed border-[#111439]/20 bg-white p-8 sm:p-12 text-center max-w-lg mx-auto mt-8 shadow-sm">
+            <h3 className="text-lg font-bold text-[#111439]">No resumes uploaded yet</h3>
             <p className="mt-2 text-sm text-[#111439]/60 leading-relaxed">
               Drag and drop your file in the box above to get started.
             </p>

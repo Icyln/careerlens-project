@@ -9,7 +9,11 @@ from datetime import datetime, timezone
 from typing import Any
 
 from django.conf import settings
+from django.core.cache import cache
 
+JSEARCH_TIMEOUT_SECONDS = 6
+JSEARCH_CACHE_SECONDS = 60 * 10
+MAX_FAST_SEARCH_TERMS = 5
 
 COUNTRY_NAMES = {
     '': 'Any country',
@@ -521,8 +525,9 @@ def build_manual_search_terms(query: str) -> list[str]:
             output.append(clean)
             seen.add(lookup)
 
-    return output[:10]
-
+    # Important for speed:
+    # Do not search 10+ synonyms on every request.
+    return output[:MAX_FAST_SEARCH_TERMS]
 
 def fetch_jsearch_jobs(
     query: str,
@@ -557,6 +562,12 @@ def fetch_jsearch_jobs(
     host = settings.JSEARCH_API_HOST or 'jsearch.p.rapidapi.com'
     url = f'https://{host}/search?{encoded}'
 
+    cache_key = f'jsearch:v2:{country}:{max_days_old}:{page}:{num_pages}:{query_text.lower()}'
+    cached_jobs = cache.get(cache_key)
+
+    if cached_jobs is not None:
+        return cached_jobs
+
     request = urllib.request.Request(
         url,
         headers={
@@ -566,15 +577,18 @@ def fetch_jsearch_jobs(
         },
     )
 
-    with urllib.request.urlopen(request, timeout=15) as response:  # nosec
+    with urllib.request.urlopen(request, timeout=JSEARCH_TIMEOUT_SECONDS) as response:  # nosec
         payload = json.loads(response.read().decode('utf-8', errors='replace'))
 
-    return [
+    jobs = [
         normalize_jsearch_job(item)
         for item in payload.get('data') or []
         if isinstance(item, dict)
     ]
 
+    cache.set(cache_key, jobs, JSEARCH_CACHE_SECONDS)
+
+    return jobs
 
 def search_jobs(
     query: str = '',
@@ -616,17 +630,26 @@ def search_jobs(
 
     search_terms = build_manual_search_terms(query)
 
-    for term in search_terms:
+    for index, term in enumerate(search_terms):
         try:
-            jobs.extend(
-                fetch_jsearch_jobs(
-                    query=term,
-                    country=country,
-                    max_days_old=max_days_old,
-                    page=1,
-                    num_pages=1,
-                )
+            fetched_jobs = fetch_jsearch_jobs(
+                query=term,
+                country=country,
+                max_days_old=max_days_old,
+                page=1,
+                num_pages=1,
             )
+
+            jobs.extend(fetched_jobs)
+
+        # If the first search already gives enough results, stop early.
+            if index == 0 and len(fetched_jobs) >= limit:
+                break
+
+        # If we already have enough raw jobs, stop.
+            if len(jobs) >= limit * 2:
+               break
+
         except Exception as exc:
             errors.append(f'JSearch unavailable for "{term}": {exc}')
 

@@ -4,6 +4,7 @@ import {
   fetchProfile,
   getStoredAccessToken,
   getStoredRefreshToken,
+  googleLoginUser,
   loginUser,
   logoutUser,
   setAuthTokens,
@@ -73,6 +74,23 @@ export function AuthProvider({ children }) {
     return result;
   }
 
+  async function loginWithGoogle(credential) {
+  const result = await googleLoginUser(credential);
+
+  setAuthTokens({
+    access: result.access,
+    refresh: result.refresh,
+  });
+
+  setUser(result.user || null);
+
+  if (!result.user) {
+    await loadProfile();
+  }
+
+  return result;
+}
+
   async function logout() {
     const refresh = getStoredRefreshToken();
 
@@ -96,6 +114,7 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(user && getStoredAccessToken()),
       login,
       signup,
+      loginWithGoogle,
       logout,
       refreshProfile: loadProfile,
     }),

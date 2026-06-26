@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
+import time
 from typing import Any
 
 from django.conf import settings
@@ -13,6 +15,7 @@ except Exception:  # pragma: no cover
     genai = None
     types = None
 
+logger = logging.getLogger(__name__)
 
 MAX_RESUME_CHARS = 7000
 MAX_JOB_DESCRIPTION_CHARS = 5000
@@ -159,6 +162,100 @@ def _load_json_object(text: str) -> dict[str, Any]:
 
     return payload
 
+def _configured_interview_api_keys() -> list[str]:
+    raw_values = [
+        getattr(settings, 'GEMINI_INTERVIEW_API_KEYS', []),
+        getattr(settings, 'GEMINI_INTERVIEW_API_KEY', ''),
+        getattr(settings, 'GEMINI_INTERVIEW_API_KEY_2', ''),
+        getattr(settings, 'GEMINI_INTERVIEW_API_KEY_3', ''),
+        getattr(settings, 'GEMINI_API_KEYS', []),
+        getattr(settings, 'GEMINI_API_KEY', ''),
+        getattr(settings, 'GEMINI_API_KEY_2', ''),
+        getattr(settings, 'GEMINI_API_KEY_3', ''),
+    ]
+    keys: list[str] = []
+
+    for value in raw_values:
+        values = value if isinstance(value, (list, tuple, set)) else str(value).split(',')
+
+        for item in values:
+            key = str(item or '').strip()
+
+            if key and key not in keys:
+                keys.append(key)
+
+    return keys
+
+
+def _gemini_retry_attempts() -> int:
+    try:
+        return max(1, int(getattr(settings, 'GEMINI_RETRY_ATTEMPTS', 1) or 1))
+    except (TypeError, ValueError):
+        return 1
+
+
+def _gemini_key_switch_delay_seconds() -> int:
+    try:
+        return max(0, int(getattr(settings, 'GEMINI_KEY_SWITCH_DELAY_SECONDS', 2) or 0))
+    except (TypeError, ValueError):
+        return 2
+
+
+def _rotate_api_keys(api_keys: list[str]) -> list[str]:
+    if len(api_keys) <= 1:
+        return api_keys
+
+    start_index = time.monotonic_ns() % len(api_keys)
+    return api_keys[start_index:] + api_keys[:start_index]
+
+
+def _generate_interview_json_with_key_fallback(
+    *,
+    contents: str,
+    model: str,
+    temperature: float = 0.35,
+) -> dict[str, Any]:
+    api_keys = _rotate_api_keys(_configured_interview_api_keys())
+
+    if not api_keys:
+        raise RuntimeError('No Gemini API keys are configured on the backend.')
+
+    errors: list[str] = []
+    model = model or getattr(settings, 'GEMINI_MODEL', 'gemini-2.5-flash-lite')
+    attempts_per_key = _gemini_retry_attempts()
+    delay_seconds = _gemini_key_switch_delay_seconds()
+
+    for attempt in range(1, attempts_per_key + 1):
+        for key_index, api_key in enumerate(api_keys, start=1):
+            try:
+                client = genai.Client(api_key=api_key)
+                response = client.models.generate_content(
+                    model=model,
+                    contents=contents,
+                    config=types.GenerateContentConfig(
+                        temperature=temperature,
+                        response_mime_type='application/json',
+                        max_output_tokens=3500,
+                    ),
+                )
+
+                text = getattr(response, 'text', '') or ''
+                return _load_json_object(text)
+
+            except Exception as exc:
+                errors.append(f'key #{key_index}, attempt #{attempt}: {exc}')
+
+                has_next_key = key_index < len(api_keys)
+                has_next_attempt = attempt < attempts_per_key
+
+                if delay_seconds and (has_next_key or has_next_attempt):
+                    time.sleep(delay_seconds)
+
+    last_error = errors[-1] if errors else 'unknown error'
+    raise RuntimeError(
+        f'Gemini interview prep failed after {len(errors)} request attempt(s) '
+        f'across {len(api_keys)} Gemini API key(s). Last error: {last_error}'
+    )
 
 def _interview_type_config(interview_type: str) -> dict[str, str]:
     key = _clean_string(interview_type).lower()
@@ -514,7 +611,7 @@ def _fallback_interview_prep(
                 job_description=job_description,
                 interview_type=interview_type,
             ),
-            'message': message or 'CareerLens created a structured fallback interview prep kit.',
+            'message': message or 'CareerLens created an interview prep kit from your selected role and job description.',
         },
         status=status,
         job_title=job_title,
@@ -650,42 +747,39 @@ def generate_interview_prep(
         )
 
     if genai is None or types is None:
+        logger.warning('CareerLens interview prep unavailable: google-genai is not installed.')
+        
         return _fallback_interview_prep(
             resume_text=resume_text,
             job_title=clean_job_title,
             job_description=clean_job_description,
             interview_type=interview_type,
             difficulty=difficulty,
-            message='google-genai is not installed in the backend environment.',
+            message='The enhanced interview coach is temporarily unavailable, so CareerLens created a safe practice kit.',
             status='fallback',
         )
 
-    api_key = (
-        getattr(settings, 'GEMINI_COVER_LETTER_API_KEY', '')
-        or getattr(settings, 'GEMINI_API_KEY', '')
-    )
+    if not _configured_interview_api_keys():
+        logger.warning('CareerLens interview prep unavailable: no Gemini API keys are configured.')
 
-    if not api_key:
         return _fallback_interview_prep(
             resume_text=resume_text,
             job_title=clean_job_title,
             job_description=clean_job_description,
             interview_type=interview_type,
             difficulty=difficulty,
-            message='Gemini API key is missing. Add GEMINI_COVER_LETTER_API_KEY or GEMINI_API_KEY.',
+            message='The enhanced interview coach is temporarily unavailable, so CareerLens created a safe practice kit.',
             status='fallback',
         )
 
     model = (
-        getattr(settings, 'GEMINI_COVER_LETTER_MODEL', '')
+        getattr(settings, 'GEMINI_INTERVIEW_MODEL', '')
         or getattr(settings, 'GEMINI_MODEL', '')
         or 'gemini-2.5-flash-lite'
     )
 
     try:
-        client = genai.Client(api_key=api_key)
-
-        response = client.models.generate_content(
+        payload = _generate_interview_json_with_key_fallback(
             model=model,
             contents=_build_prompt(
                 resume_text=resume_text or '',
@@ -696,15 +790,8 @@ def generate_interview_prep(
                 focus_area=focus_area,
                 user_notes=user_notes,
             ),
-            config=types.GenerateContentConfig(
-                temperature=0.35,
-                response_mime_type='application/json',
-                max_output_tokens=3500,
-            ),
+            temperature=0.35,
         )
-
-        text = getattr(response, 'text', '') or ''
-        payload = _load_json_object(text)
 
         return _merge_result(
             payload,
@@ -716,7 +803,10 @@ def generate_interview_prep(
         )
 
     except Exception as exc:
-        print('INTERVIEW GEMINI ERROR:', repr(exc))
+        logger.exception(
+           'CareerLens interview prep generation failed. Technical details are hidden from users. Error: %s',
+        exc,
+        )
 
         return _fallback_interview_prep(
             resume_text=resume_text,
@@ -724,6 +814,6 @@ def generate_interview_prep(
             job_description=clean_job_description,
             interview_type=interview_type,
             difficulty=difficulty,
-            message='Gemini could not generate the interview prep kit, so CareerLens created a safe fallback kit.',
+            message='The enhanced interview coach is temporarily unavailable, so CareerLens created a safe practice kit.',
             status='fallback',
         )

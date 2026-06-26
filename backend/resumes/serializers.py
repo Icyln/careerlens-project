@@ -13,6 +13,9 @@ from .services.text_extractor import SUPPORTED_EXTENSIONS, extract_text_from_res
 User = get_user_model()
 
 class SignupSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+    first_name = serializers.CharField(required=False, allow_blank=True, max_length=150)
+    last_name = serializers.CharField(required=False, allow_blank=True, max_length=150)
     password = serializers.CharField(write_only=True, min_length=8)
     password_confirm = serializers.CharField(write_only=True, min_length=8)
 
@@ -29,6 +32,28 @@ class SignupSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id']
 
+    def validate_username(self, value):
+        value = str(value or '').strip()
+
+        if not value:
+            raise serializers.ValidationError('Username is required.')
+
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError('This username is already taken.')
+
+        return value
+
+    def validate_email(self, value):
+        value = str(value or '').strip().lower()
+
+        if not value:
+            raise serializers.ValidationError('Email is required.')
+
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError('This email is already used by another account.')
+
+        return value
+
     def validate(self, attrs):
         password = attrs.get('password')
         password_confirm = attrs.pop('password_confirm', None)
@@ -41,12 +66,13 @@ class SignupSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password')
+
         user = User(**validated_data)
         user.set_password(password)
         user.save()
+
         return user
-
-
+    
 class UserProfileSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
 

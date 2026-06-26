@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -14,16 +14,6 @@ import {
   Target,
 } from 'lucide-react';
 import { toArray, toText } from '../utils/safeRender.js';
-
-const STORAGE_KEY = 'careerlens_career_guidance';
-
-function readStoredGuidance() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-  } catch {
-    return null;
-  }
-}
 
 function safeList(value) {
   return toArray(value)
@@ -149,7 +139,8 @@ function ActionCard({ item, index }) {
 }
 
 export default function CareerGuidancePage() {
-  const guidance = readStoredGuidance();
+  const location = useLocation();
+  const guidance = location.state?.guidance || null;
   const actions = toArray(guidance?.priority_actions);
   const copyBody = formatGuidanceForCopy(guidance);
 
@@ -161,11 +152,11 @@ export default function CareerGuidancePage() {
         </div>
 
         <h1 className="mt-5 text-2xl font-semibold text-slate-950">
-          No Career Intelligence Plan yet
+          No Career Action Plan yet
         </h1>
 
         <p className="mx-auto mt-2 max-w-lg text-sm leading-7 text-slate-500">
-          Go back to the dashboard and generate personalized career guidance from your goals, target roles, companies, strengths, weaknesses, and dashboard signals.
+          Go back to the dashboard and run an ATS analysis. CareerLens will create an instant rule-based action plan from your latest ATS report.
         </p>
 
         <Link
@@ -195,7 +186,7 @@ export default function CareerGuidancePage() {
 
              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-700 ring-1 ring-blue-100">
                <Compass size={14} />
-               Career Intelligence Plan
+               Career Action Plan
              </div>
             </div>
 
@@ -243,8 +234,8 @@ export default function CareerGuidancePage() {
             </p>
             <p className="mt-2 text-sm leading-6 text-slate-700">
               {guidance.status === 'success'
-                ? 'Generated with AI from your dashboard and career context.'
-                : toText(guidance.message, 'Fallback guidance was generated safely.')}
+                ? 'Generated instantly from your latest ATS report.'
+                : toText(guidance.message, 'Rule-based career action plan was generated safely.')}
             </p>
           </div>
         </div>
@@ -296,7 +287,7 @@ export default function CareerGuidancePage() {
           <div>
             <h2 className="text-base font-semibold">Use this plan honestly</h2>
             <p className="mt-2 text-sm leading-7 text-white/65">
-              Treat the AI plan as guidance, not a promise. Keep your resume truthful, prioritize roles where you have real evidence, and use the roadmap to improve your application quality over time.
+              Treat this plan as guidance, not a promise. Keep your resume truthful, prioritize roles where you have real evidence, and rerun ATS analysis after editing to validate improvements.
             </p>
           </div>
         </div>

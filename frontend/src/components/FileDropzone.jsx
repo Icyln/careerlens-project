@@ -46,16 +46,16 @@ export default function FileDropzone({ onFileSelected, disabled = false, compact
         onChange={(event) => handleFiles(event.target.files)}
       />
       
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#106EBE] to-[#0FFCBE] text-white shadow-lg shadow-[#106EBE]/20 transition-transform duration-300 group-hover:-translate-y-1">
-        <UploadCloud size={24} />
+      <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#106EBE] to-[#0FFCBE] text-white shadow-lg shadow-[#106EBE]/20 transition-transform duration-300 group-hover:-translate-y-1">
+        <UploadCloud size={24} className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
       
-      <h3 className="mt-5 text-base sm:text-lg font-extrabold text-[#111439]">Upload your resume</h3>
-      <p className="mt-2 text-sm text-[#111439]/60 max-w-[220px] mx-auto leading-relaxed">
+      <h3 className="mt-4 sm:mt-5 text-base sm:text-lg font-bold text-[#111439]">Upload your resume</h3>
+      <p className="mt-2 text-xs sm:text-sm text-[#111439]/60 max-w-[220px] mx-auto leading-relaxed">
         Drag and drop your PDF or Word document here, or click to choose a file.
       </p>
       
-      <p className="mt-4 inline-block px-3 py-1 bg-[#111439]/5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-[#111439]/50">
+      <p className="mt-4 inline-block px-3 py-1 bg-[#111439]/5 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#111439]/50">
         Safe & Secure Upload
       </p>
     </div>

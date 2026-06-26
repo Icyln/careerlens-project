@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
 import {
   BarChart3,
   ClipboardList,
@@ -8,7 +7,6 @@ import {
   Gauge,
   Menu,
   Search,
-  ShieldCheck,
   Sparkles,
   WandSparkles,
   X,
@@ -26,8 +24,6 @@ const NAV_ITEMS = [
   { to: '/applications', label: 'Applications', icon: ClipboardList },
   { to: '/interview-prep', label: 'Interview', icon: BrainCircuit },
 ];
-
-const ADMIN_NAV_ITEM = { to: '/admin', label: 'Admin', icon: ShieldCheck };
 
 function navClass({ isActive }) {
   return [
@@ -73,21 +69,11 @@ function Logo({ compact = false }) {
 export default function Layout({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
-  const { user } = useAuth();
+  const visibleNavItems = NAV_ITEMS;
 
-  const isAdmin = Boolean(
-    user?.is_staff ||
-    user?.is_admin ||
-    user?.role === 'admin'
-  );
-
-  const visibleNavItems = isAdmin
-    ? [...NAV_ITEMS, ADMIN_NAV_ITEM]
-    : NAV_ITEMS;
-
-  const activeItem = visibleNavItems.find((item) =>
-    location.pathname.startsWith(item.to)
-  );
+  const activeItem =
+    visibleNavItems.find((item) => location.pathname.startsWith(item.to)) ||
+    (location.pathname.startsWith('/admin') ? { label: 'Admin' } : null);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#F6F8FC] selection:bg-[#0FFCBE]/30 font-['Inter',_ui-sans-serif,_system-ui,_sans-serif]">

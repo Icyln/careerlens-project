@@ -617,8 +617,7 @@ function ResultsSection({
     <div className="space-y-6">
       {result.status === 'fallback' && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium leading-6 text-amber-800">
-          {result.message || 'CareerLens created a safe fallback interview prep kit.'}
-          {' '}Review and personalize the sample answers before using them.
+          CareerLens created a safe interview prep kit from your selected role and job description. Review and personalize the sample answers before using them.
         </div>
       )}
 
@@ -1000,21 +999,18 @@ export default function InterviewPrepPage() {
           type: 'success',
           text: `${selectedInterviewType.label} interview questions generated successfully.`,
         });
-      } else if (data.status === 'fallback') {
-        setMessage({
-          type: 'warning',
-          text: data.message || 'CareerLens created a safe fallback interview prep kit.',
-        });
       } else {
         setMessage({
-          type: 'error',
-          text: data.message || 'Interview questions could not be generated.',
+          type: 'warning',
+          text: 'The enhanced interview coach is temporarily unavailable, so CareerLens created a safe practice kit.',
         });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: getErrorMessage(error) });
-    } finally {
-      setGenerating(false);
+      console.error('Interview prep generation failed:', error);
+      setMessage({
+        type: 'error',
+        text: 'We could not complete the interview prep request right now. Please try again later.',
+      });
     }
   }
 

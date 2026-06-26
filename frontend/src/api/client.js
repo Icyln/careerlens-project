@@ -47,6 +47,7 @@ api.interceptors.response.use(
     const isAuthEndpoint =
       url.includes('/auth/login/') ||
       url.includes('/auth/signup/') ||
+      url.includes('/auth/google/') ||
       url.includes('/auth/refresh/') ||
       url.includes('/auth/logout/');
 
@@ -93,6 +94,14 @@ export async function loginUser({ username, password }) {
     username,
     password,
   });
+  return response.data;
+}
+
+export async function googleLoginUser(credential) {
+  const response = await api.post('/auth/google/', {
+    credential,
+  });
+
   return response.data;
 }
 
@@ -175,11 +184,6 @@ export async function fetchDashboard({ useAi = false } = {}) {
   const response = await api.get('/analysis/dashboard/', {
     params: { ai: useAi ? 'true' : 'false' },
   });
-  return response.data;
-}
-
-export async function generateCareerGuidance(payload = {}) {
-  const response = await api.post('/analysis/career-guidance/', payload);
   return response.data;
 }
 
