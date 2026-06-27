@@ -1,64 +1,513 @@
-# CareerLens Full-Stack Starter
+CareerLens — AI-Assisted Career Readiness Platform
+==================================================
 
-CareerLens is a React + Tailwind frontend and Django REST + MySQL backend for resume upload, resume management, rule-based ATS scoring, Gemini AI analysis, and PDF report export.
+CareerLens is a full-stack career assistance platform that helps job seekers analyze resume-job fit, improve resumes, generate application documents, prepare for interviews, and track job applications in one connected workflow.
 
-## Features implemented
+The system’s core feature is a **rule-based ATS analysis engine** that compares a resume with a job description and provides explainable scoring, matched requirements, missing keywords, readability checks, and improvement suggestions. AI-assisted tools are used to support resume tailoring, cover letter generation, and interview preparation.
 
-- Resume Page
-  - Upload PDF/DOCX resume
-  - Store resume metadata in the database
-  - Store file in Django media storage
-  - Show uploaded resume file name, file size, uploaded date/time, file type, and parser warnings
-  - Update button to re-upload a different resume file
-  - Delete Resume button to remove file and database record
-  - Check ATS & Analysis button to open the ATS page with that resume selected
+Project Overview
+----------------
 
-- ATS & Analysis Page
-  - Resume selector, with automatic selection when only one resume exists
-  - Job Title field
-  - Job Description textarea
-  - Rule-based ATS score independent from AI
-  - Section-by-section scoring for keyword matches, contact information, work experience/education, and layout/formatting
-  - Average ATS percentage and match level
-  - Gemini AI analysis independent from ATS
-  - AI summary, matched skills, missing skills, strengths, weaknesses, alignment explanation, recommendations, and visualization bars
-  - Export report as PDF
-  - Tailor Your Resume button and tailoring panel
+Many job seekers submit resumes without knowing whether their resume matches the job description or whether it can be read properly by an Applicant Tracking System.
 
-## Run with MySQL
+CareerLens helps users by providing a complete career support workflow:
 
-From the project root:
+1.  Upload a resume
+    
+2.  Analyze it against a job description
+    
+3.  View ATS match score and readability score
+    
+4.  Identify matched and missing requirements
+    
+5.  Receive improvement suggestions
+    
+6.  Tailor the resume using truthful confirmed keywords
+    
+7.  Generate a job-specific cover letter
+    
+8.  Prepare interview questions and sample answers
+    
+9.  Track job applications and follow-ups
+    
+10.  View dashboard insights and career action plans
+    
 
-```bash
-docker compose up -d mysql
-```
+CareerLens is designed for students, fresh graduates, and job seekers who want a clearer way to improve their applications.
 
-Backend:
+Main Objective
+--------------
 
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-python manage.py migrate
-python manage.py runserver 127.0.0.1:8000
-```
+The main objective of CareerLens is to help users understand and improve their job application readiness through clear, explainable, and actionable feedback.
 
-Frontend:
+CareerLens does **not** encourage fake experience. It helps users present their real skills and experience more effectively.
 
-```bash
-cd frontend
-npm install
-cp .env.example .env
-npm run dev
-```
+Key Features
+------------
 
-Open `http://localhost:5173`.
+### User Authentication
 
-## Notes
+*   Sign up and login
+    
+*   Logout
+    
+*   Protected routes
+    
+*   User profile
+    
+*   Google OAuth login
+    
+*   Role-based access for users and admins
+    
 
-- ATS scoring is a deterministic rule-based engine in `backend/resumes/services/ats_engine.py`.
-- Gemini AI analysis is in `backend/resumes/services/ai_engine.py` and is disabled until `GEMINI_API_KEY` is added to `backend/.env`.
-- Uploaded files are served from Django `MEDIA_ROOT` during local development.
-- For production, configure a real static/media storage strategy, HTTPS, authentication, authorization, rate limits, and virus scanning for uploads.
+Each user can only access their own resumes, ATS reports, cover letters, interview preparation results, and job applications.
+
+### Resume Upload and Management
+
+*   Resume upload
+    
+*   PDF/DOCX support
+    
+*   Resume text extraction
+    
+*   Resume list display
+    
+*   File size validation
+    
+*   Daily upload limit
+    
+*   User-specific resume ownership
+    
+*   Reusable resumes across ATS, tailoring, cover letter, and interview prep features
+    
+
+### Rule-Based ATS Analysis
+
+Users select a resume, enter a target job title, and paste a job description. CareerLens then generates a structured ATS report.
+
+The ATS report includes:
+
+*   Job match score
+    
+*   ATS readability score
+    
+*   Match level
+    
+*   Readability level
+    
+*   Matched keywords
+    
+*   Missing keywords
+    
+*   Top fixes
+    
+*   Detailed checklist
+    
+*   Requirement coverage
+    
+*   Resume readability feedback
+    
+*   Recruiter-style recommendations
+    
+
+The ATS score is rule-based and explainable, not randomly generated by AI.
+
+### AI Recruiter Review
+
+CareerLens includes an optional AI-assisted recruiter review for ATS reports.
+
+It provides natural-language feedback about:
+
+*   Resume strengths
+    
+*   Weaknesses
+    
+*   Improvement suggestions
+    
+*   Recruiter-style recommendations
+    
+
+If the AI service is unavailable, the system shows a friendly fallback message while the backend logs the real technical error.
+
+### Dashboard and Career Action Plan
+
+The dashboard gives users an overview of their career readiness.
+
+It includes:
+
+*   Total resumes
+    
+*   Total ATS reports
+    
+*   Latest ATS report
+    
+*   Job match score summary
+    
+*   Readability score summary
+    
+*   Application metrics
+    
+*   Career Action Plan
+    
+
+The Career Action Plan is rule-based and generated from the latest ATS report. It does not depend on Gemini or external AI APIs, making it fast and reliable.
+
+### Resume Tailoring
+
+The resume tailoring feature helps users create a more targeted resume based on an ATS report.
+
+Features include:
+
+*   ATS report selection
+    
+*   Confirmed keyword selection
+    
+*   Template selection
+    
+*   AI-assisted tailored resume draft
+    
+*   Safety notes
+    
+*   Included keyword summary
+    
+*   Export support
+    
+
+Users must confirm truthful keywords before tailoring, so the system avoids adding unsupported or fake experience.
+
+### Cover Letter Generation
+
+CareerLens can generate a job-specific cover letter using the selected ATS report and resume context.
+
+Features include:
+
+*   ATS report selection
+    
+*   Company name input
+    
+*   Hiring manager input
+    
+*   Tone selection
+    
+*   Length guidance
+    
+*   Focus keyword support
+    
+*   Subject line generation
+    
+*   Cover letter draft
+    
+*   Highlighted strengths
+    
+*   Keywords used
+    
+*   Safety notes
+    
+*   Copy/export support
+    
+
+The cover letter is treated as a draft and should be reviewed before sending.
+
+### Interview Preparation
+
+The interview preparation feature helps users practice for interviews based on their resume and target role.
+
+Features include:
+
+*   Resume or ATS report selection
+    
+*   Job title input
+    
+*   Job description input
+    
+*   Interview type selection
+    
+*   Difficulty selection
+    
+*   Focus area selection
+    
+*   Interview questions
+    
+*   Sample answers
+    
+*   Self-introduction guidance
+    
+*   Tough questions
+    
+*   Questions to ask the employer
+    
+*   Final tips
+    
+
+Supported interview types include:
+
+*   Role-specific interview
+    
+*   Behavioral interview
+    
+*   Practical/technical interview
+    
+*   Final round interview
+    
+
+### Job Search
+
+CareerLens includes job search support using the JSearch API.
+
+Features include:
+
+*   Job keyword search
+    
+*   Country/location filtering
+    
+*   Job listing display
+    
+*   Job details viewing
+    
+*   Friendly error handling when the external job API is unavailable
+    
+
+### Application Tracker
+
+The application tracker helps users manage job applications.
+
+Users can save and manage:
+
+*   Job title
+    
+*   Company name
+    
+*   Location
+    
+*   Job URL
+    
+*   Application status
+    
+*   Priority
+    
+*   Employment type
+    
+*   Salary
+    
+*   Job description snapshot
+    
+*   Notes
+    
+*   Application date
+    
+*   Deadline
+    
+*   Follow-up date
+    
+*   Linked resume
+    
+*   Linked ATS report
+    
+
+### Admin Dashboard
+
+CareerLens includes an admin dashboard for system management.
+
+Admin features include:
+
+*   Admin-only access
+    
+*   User management
+    
+*   User search
+    
+*   Role filtering
+    
+*   Status filtering
+    
+*   User creation
+    
+*   User editing
+    
+*   Admin access control
+    
+*   Active/inactive account control
+    
+*   Platform statistics
+    
+
+Admin access is only shown to users with the correct role.
+
+### Graceful Fallback Handling
+
+CareerLens includes fallback handling for external AI features.
+
+If Gemini or another external service fails:
+
+*   Users see a friendly fallback message
+    
+*   The app continues working
+    
+*   Safe fallback content is shown when possible
+    
+*   The backend logs the real technical error
+    
+
+Fallback handling is applied to:
+
+*   ATS AI recruiter review
+    
+*   Resume tailoring
+    
+*   Cover letter generation
+    
+*   Interview preparation
+    
+
+The rule-based ATS score and dashboard Career Action Plan remain available even if AI APIs fail.
+
+Technology Stack
+----------------
+
+### Frontend
+
+*   React
+    
+*   Vite
+    
+*   Tailwind CSS
+    
+*   Axios
+    
+*   React Router
+    
+*   Lucide React Icons
+    
+
+### Backend
+
+*   Django
+    
+*   Django REST Framework
+    
+*   Simple JWT Authentication
+    
+*   Django CORS Headers
+    
+*   MySQL
+    
+*   Resume text extraction services
+    
+
+### External APIs
+
+*   Google Gemini API
+    
+*   JSearch API
+    
+*   Google OAuth
+    
+
+### Development Tools
+
+*   Git
+    
+*   GitHub
+    
+*   VS Code / Antigravity
+    
+*   Browser Developer Tools
+    
+
+System Workflow
+---------------
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Landing Page     ↓  Sign Up / Login     ↓  Dashboard     ↓  Upload Resume     ↓  Run ATS Analysis     ↓  View ATS Report     ↓  Dashboard Career Action Plan     ↓  Tailor Resume     ↓  Generate Cover Letter     ↓  Prepare Interview Questions     ↓  Track Job Applications   `
+
+Project Structure
+-----------------
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   CareerLens/  ├── backend/  │   ├── career_lens/  │   │   ├── settings.py  │   │   ├── urls.py  │   │   └── wsgi.py  │   ├── resumes/  │   │   ├── models.py  │   │   ├── serializers.py  │   │   ├── views.py  │   │   ├── permissions.py  │   │   └── services/  │   │       ├── ats_engine.py  │   │       ├── ai_engine.py  │   │       ├── cover_letter_engine.py  │   │       ├── interview_engine.py  │   │       ├── dashboard_engine.py  │   │       ├── job_search.py  │   │       ├── text_extractor.py  │   │       └── report_pdf.py  │   ├── manage.py  │   └── requirements.txt  │  ├── frontend/  │   ├── src/  │   │   ├── api/  │   │   │   └── client.js  │   │   ├── components/  │   │   ├── context/  │   │   ├── pages/  │   │   └── App.jsx  │   ├── package.json  │   └── vite.config.js  │  └── README.md   `
+
+Installation and Setup
+----------------------
+
+### Prerequisites
+
+Make sure these are installed:
+
+*   Python
+    
+*   Node.js
+    
+*   MySQL
+    
+*   Git
+    
+
+Backend Setup
+-------------
+
+Navigate to the backend folder:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   cd backend   `
+
+Create a virtual environment:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   python -m venv .venv   `
+
+Activate the virtual environment.
+
+For Windows:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   .venv\Scripts\activate   `
+
+For macOS/Linux:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   source .venv/bin/activate   `
+
+Install dependencies:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   pip install -r requirements.txt   `
+
+Create a .env file inside the backend folder:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   SECRET_KEY=your_secret_key  DEBUG=True  ALLOWED_HOSTS=localhost,127.0.0.1  DB_ENGINE=mysql  DB_NAME=careerlens_db  DB_USER=your_mysql_user  DB_PASSWORD=your_mysql_password  DB_HOST=127.0.0.1  DB_PORT=3306  CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173  CSRF_TRUSTED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173  MAX_RESUME_UPLOAD_MB=15  GEMINI_API_KEY=your_gemini_key  GEMINI_API_KEY_2=your_second_gemini_key  GEMINI_API_KEY_3=your_third_gemini_key  GEMINI_RETRY_ATTEMPTS=1  GEMINI_KEY_SWITCH_DELAY_SECONDS=2  GEMINI_MODEL=gemini-2.5-flash-lite  JSEARCH_API_KEY=your_jsearch_api_key  JSEARCH_API_HOST=jsearch.p.rapidapi.com  GOOGLE_OAUTH_CLIENT_ID=your_google_oauth_client_id   `
+
+Run migrations:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   python manage.py migrate   `
+
+Start the backend server:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   python manage.py runserver   `
+
+Backend runs at:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   http://127.0.0.1:8000   `
+
+Frontend Setup
+--------------
+
+Navigate to the frontend folder:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   cd frontend   `
+
+Install dependencies:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   npm install   `
+
+Create a .env file inside the frontend folder:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   VITE_API_BASE_URL=http://127.0.0.1:8000/api  VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id   `
+
+Start the frontend server:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   npm run dev   `
+
+Frontend runs at:
+
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   http://localhost:5173   `
+    
+
+Conclusion
+----------
+
+CareerLens is a practical career readiness platform that helps job seekers understand resume-job fit, improve resume quality, prepare job documents, practice interviews, and manage job applications.
+
+The system combines rule-based ATS analysis, AI-assisted support, dashboard insights, application tracking, and admin management into one complete final year project solution.
