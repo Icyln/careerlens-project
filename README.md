@@ -1,64 +1,468 @@
-# CareerLens Full-Stack Starter
+CareerLens — AI-Assisted Career Readiness Platform
 
-CareerLens is a React + Tailwind frontend and Django REST + MySQL backend for resume upload, resume management, rule-based ATS scoring, Gemini AI analysis, and PDF report export.
+CareerLens is a full-stack career assistance platform that helps job seekers improve their resumes, analyze job-fit readiness, prepare application documents, practice interviews, and manage job applications in one connected workflow.
 
-## Features implemented
+The core feature of CareerLens is a rule-based ATS analysis engine that compares a resume against a target job description and provides explainable scoring, matched requirements, missing keywords, readability checks, and improvement suggestions. The system is supported by AI-assisted features such as resume tailoring, cover letter generation, and interview preparation.
 
-- Resume Page
-  - Upload PDF/DOCX resume
-  - Store resume metadata in the database
-  - Store file in Django media storage
-  - Show uploaded resume file name, file size, uploaded date/time, file type, and parser warnings
-  - Update button to re-upload a different resume file
-  - Delete Resume button to remove file and database record
-  - Check ATS & Analysis button to open the ATS page with that resume selected
+CareerLens is designed to support students, fresh graduates, and job seekers who want a clearer and more structured way to improve their job applications.
 
-- ATS & Analysis Page
-  - Resume selector, with automatic selection when only one resume exists
-  - Job Title field
-  - Job Description textarea
-  - Rule-based ATS score independent from AI
-  - Section-by-section scoring for keyword matches, contact information, work experience/education, and layout/formatting
-  - Average ATS percentage and match level
-  - Gemini AI analysis independent from ATS
-  - AI summary, matched skills, missing skills, strengths, weaknesses, alignment explanation, recommendations, and visualization bars
-  - Export report as PDF
-  - Tailor Your Resume button and tailoring panel
+Project Summary
 
-## Run with MySQL
+Many job seekers submit resumes without knowing whether their resume matches the job description or whether an Applicant Tracking System can read it properly. A resume may contain good experience, but it may still perform poorly if it lacks relevant keywords, has unclear formatting, or does not align with the target role.
 
-From the project root:
+CareerLens solves this problem by providing a complete career support workflow:
 
-```bash
-docker compose up -d mysql
-```
+Upload a resume
+Analyze the resume against a job description
+View ATS match score and readability score
+Identify matched and missing requirements
+Receive practical improvement suggestions
+Tailor the resume using truthful confirmed keywords
+Generate a job-specific cover letter
+Prepare interview questions and sample answers
+Track job applications and follow-ups
+View dashboard insights and career action plans
 
-Backend:
+The system combines rule-based analysis, AI assistance, dashboard analytics, application tracking, and admin management into one practical platform.
 
-```bash
+Main Objective
+
+The main objective of CareerLens is to help users understand and improve their job application readiness by giving them clear, explainable, and actionable feedback.
+
+CareerLens is not designed to fake experience or create unrealistic career documents. Instead, it helps users present their real skills and experience more effectively.
+
+Key Features
+1. User Authentication
+
+CareerLens supports user account management so that each user can securely manage their own career data.
+
+Features include:
+
+User sign up
+User login
+Logout
+Protected routes
+User profile
+Google OAuth login
+Role-based access for normal users and admin users
+
+Each user can only access their own resumes, ATS reports, cover letters, interview preparation results, and job applications.
+
+2. Resume Upload and Management
+
+Users can upload and manage resume files.
+
+Features include:
+
+Resume upload
+PDF/DOCX resume support
+Resume text extraction
+Resume list display
+File size validation
+Resume ownership per user
+Daily upload limit
+Resume reuse across ATS analysis, tailoring, cover letter generation, and interview preparation
+
+The resume upload feature supports files up to the configured upload limit.
+
+3. Rule-Based ATS Analysis
+
+The ATS analysis feature is the core of CareerLens.
+
+Users select a resume, enter a target job title, and paste a job description. The system then analyzes the resume against the job description and produces a structured ATS report.
+
+The ATS report includes:
+
+Overall job match score
+ATS readability score
+Job match level
+Readability level
+Matched keywords
+Missing keywords
+Top improvement suggestions
+Detailed checklist
+Requirement coverage
+Resume readability feedback
+Searchability checks
+Recruiter-style recommendations
+
+The ATS score is rule-based and explainable. This means the result is not randomly generated by AI. The scoring is based on structured checks such as keyword matching, job title alignment, experience relevance, education relevance, readability, formatting, and required job criteria.
+
+4. AI Recruiter Review
+
+CareerLens includes an optional AI-assisted recruiter review for ATS reports.
+
+This feature provides a more natural explanation of the resume’s strengths, weaknesses, and suggested improvements.
+
+If the external AI service is unavailable, the system does not expose technical errors to the user. Instead, it shows a friendly fallback message while the backend logs the real technical issue for developers.
+
+5. Dashboard and Career Action Plan
+
+The dashboard gives users a quick overview of their career readiness and activity.
+
+Dashboard features include:
+
+Total resumes
+Total ATS reports
+Latest ATS report
+Job match score summary
+Readability score summary
+Application metrics
+Career Action Plan
+Recent activity overview
+
+The Career Action Plan is rule-based and generated from the latest ATS report. It gives users practical next steps such as improving missing keywords, fixing readability issues, strengthening weak resume areas, and rerunning the ATS analysis after editing.
+
+This feature does not rely on Gemini or external AI APIs, making it fast and reliable.
+
+6. Resume Tailoring
+
+The resume tailoring feature helps users create a more targeted resume version based on an ATS report.
+
+The system uses a truthful keyword confirmation workflow. Users can review suggested or missing keywords and select only the ones that are true to their experience.
+
+Resume tailoring features include:
+
+ATS report selection
+Confirmed keyword selection
+Template selection
+AI-assisted tailored resume draft
+Safety notes
+Included keyword summary
+Export support
+
+CareerLens does not encourage fake experience. The tailoring feature is designed to improve wording and alignment while keeping the resume honest.
+
+If the AI service fails, the system shows a safe fallback and allows the user to continue with the original extracted resume text and manual improvement guidance.
+
+7. Cover Letter Generation
+
+CareerLens can generate a job-specific cover letter using the selected ATS report, resume context, job title, company name, hiring manager, tone, and optional notes.
+
+Cover letter features include:
+
+ATS report selection
+Company name input
+Hiring manager input
+Tone selection
+Length guidance
+Focus keyword support
+Subject line generation
+Cover letter draft generation
+Highlighted strengths
+Keywords used
+Safety notes
+Next steps
+Copy/export support
+
+The generated cover letter is treated as a draft. Users are encouraged to review and personalize it before sending.
+
+The system does not display exact generated word count because AI-generated word counts may not always perfectly match the selected length range. This keeps the user experience clearer and avoids confusion.
+
+8. Interview Preparation
+
+The interview preparation feature helps users prepare for interviews based on their resume and target role.
+
+Interview preparation features include:
+
+Resume or ATS report selection
+Job title input
+Job description input
+Interview type selection
+Difficulty selection
+Focus area selection
+AI-generated interview questions
+Sample answers
+Self-introduction guidance
+Talking points
+Tough questions
+Questions to ask the employer
+Final interview tips
+Safety notes
+
+Supported interview preparation types include:
+
+Role-specific interview
+Behavioral interview
+Practical/technical interview
+Final round interview
+
+If the AI service is unavailable, CareerLens provides a safe fallback practice kit so the user can still continue preparing.
+
+9. Job Search
+
+CareerLens includes job search support using the JSearch API.
+
+Job search features include:
+
+Job keyword search
+Country/location filtering
+Job listing display
+Job details viewing
+Job search result handling
+Friendly error handling when the external job API is unavailable
+
+This feature helps connect the user’s resume analysis workflow with real job opportunities.
+
+10. Application Tracker
+
+The application tracker helps users organize their job search process.
+
+Users can save and manage job applications with details such as:
+
+Job title
+Company name
+Location
+Job URL
+Application status
+Priority
+Employment type
+Salary
+Job description snapshot
+Notes
+Application date
+Deadline
+Follow-up date
+Linked resume
+Linked ATS report
+
+Application tracking helps users monitor their progress, follow up on applications, and manage multiple job opportunities in one place.
+
+11. Admin Dashboard
+
+CareerLens includes an admin dashboard for system management.
+
+Admin features include:
+
+Admin-only access
+User management
+User search
+Role filtering
+Status filtering
+User creation
+User editing
+Admin access control
+Active/inactive user status control
+Platform statistics
+Total users
+Active users
+Admin users
+Total reports
+
+The admin dashboard is separated from the normal user workflow. Admin access is shown only to users with the correct role.
+
+12. Graceful Fallback Handling
+
+CareerLens includes graceful fallback handling for external AI features.
+
+If Gemini or another external service fails, the system avoids showing technical errors to users. Instead:
+
+Users see a friendly fallback message
+The app continues working
+Safe fallback content is provided when possible
+The backend logs the real technical error for debugging
+
+This improves system reliability and user trust.
+
+Fallback handling is applied to:
+
+ATS AI recruiter review
+Resume tailoring
+Cover letter generation
+Interview preparation
+
+The rule-based ATS score and dashboard Career Action Plan do not depend on AI and remain available even if AI APIs fail.
+
+Technology Stack
+Frontend
+React
+Vite
+Tailwind CSS
+Axios
+React Router
+Lucide React Icons
+Backend
+Django
+Django REST Framework
+Simple JWT Authentication
+Django CORS Headers
+MySQL Database
+Resume text extraction services
+APIs and External Services
+Google Gemini API
+JSearch API
+Google OAuth
+Database
+MySQL
+Development Tools
+Git
+GitHub
+VS Code / Antigravity
+Browser developer tools
+System Workflow
+
+The main user workflow is:
+
+Landing Page
+   ↓
+Sign Up / Login
+   ↓
+Dashboard
+   ↓
+Upload Resume
+   ↓
+Run ATS Analysis
+   ↓
+View ATS Report
+   ↓
+Dashboard Career Action Plan
+   ↓
+Tailor Resume
+   ↓
+Generate Cover Letter
+   ↓
+Prepare Interview Questions
+   ↓
+Track Job Applications
+
+This workflow allows users to move from resume upload to job application preparation in a structured way.
+
+Project Structure
+
+The project is organized into frontend and backend sections.
+
+CareerLens/
+├── backend/
+│   ├── career_lens/
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   └── wsgi.py
+│   ├── resumes/
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── views.py
+│   │   ├── permissions.py
+│   │   └── services/
+│   │       ├── ats_engine.py
+│   │       ├── ai_engine.py
+│   │       ├── cover_letter_engine.py
+│   │       ├── interview_engine.py
+│   │       ├── dashboard_engine.py
+│   │       ├── job_search.py
+│   │       ├── text_extractor.py
+│   │       └── report_pdf.py
+│   ├── manage.py
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   │   ├── api/
+│   │   │   └── client.js
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── pages/
+│   │   └── App.jsx
+│   ├── package.json
+│   └── vite.config.js
+│
+└── README.md
+Installation and Setup
+Prerequisites
+
+Make sure the following are installed:
+
+Python
+Node.js
+MySQL
+Git
+Backend Setup
+
+Navigate to the backend folder:
+
 cd backend
+
+Create a virtual environment:
+
 python -m venv .venv
+
+Activate the virtual environment.
+
+For Windows:
+
+.venv\Scripts\activate
+
+For macOS/Linux:
+
 source .venv/bin/activate
+
+Install backend dependencies:
+
 pip install -r requirements.txt
-cp .env.example .env
+
+Create a .env file inside the backend folder.
+
+Example .env:
+
+SECRET_KEY=your_secret_key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+DB_ENGINE=mysql
+DB_NAME=careerlens_db
+DB_USER=your_mysql_user
+DB_PASSWORD=your_mysql_password
+DB_HOST=127.0.0.1
+DB_PORT=3306
+
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+CSRF_TRUSTED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+
+MAX_RESUME_UPLOAD_MB=15
+
+GEMINI_API_KEY=your_gemini_key
+GEMINI_API_KEY_2=your_second_gemini_key
+GEMINI_API_KEY_3=your_third_gemini_key
+GEMINI_RETRY_ATTEMPTS=1
+GEMINI_KEY_SWITCH_DELAY_SECONDS=2
+GEMINI_MODEL=gemini-2.5-flash-lite
+
+JSEARCH_API_KEY=your_jsearch_api_key
+JSEARCH_API_HOST=jsearch.p.rapidapi.com
+
+GOOGLE_OAUTH_CLIENT_ID=your_google_oauth_client_id
+
+Run migrations:
+
 python manage.py migrate
-python manage.py runserver 127.0.0.1:8000
-```
 
-Frontend:
+Start the backend server:
 
-```bash
+python manage.py runserver
+
+Backend runs at:
+
+http://127.0.0.1:8000
+Frontend Setup
+
+Navigate to the frontend folder:
+
 cd frontend
+
+Install frontend dependencies:
+
 npm install
-cp .env.example .env
+
+Create a .env file inside the frontend folder.
+
+Example .env:
+
+VITE_API_BASE_URL=http://127.0.0.1:8000/api
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+
+Start the frontend development server:
+
 npm run dev
-```
 
-Open `http://localhost:5173`.
+Frontend runs at:
 
-## Notes
-
-- ATS scoring is a deterministic rule-based engine in `backend/resumes/services/ats_engine.py`.
-- Gemini AI analysis is in `backend/resumes/services/ai_engine.py` and is disabled until `GEMINI_API_KEY` is added to `backend/.env`.
-- Uploaded files are served from Django `MEDIA_ROOT` during local development.
-- For production, configure a real static/media storage strategy, HTTPS, authentication, authorization, rate limits, and virus scanning for uploads.
+http://localhost:5173
