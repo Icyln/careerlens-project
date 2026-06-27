@@ -409,7 +409,7 @@ Technology Stack
     
 *   GitHub
     
-*   VS Code / Antigravity
+*   VS Code
     
 *   Browser Developer Tools
     
