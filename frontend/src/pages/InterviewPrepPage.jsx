@@ -952,67 +952,69 @@ export default function InterviewPrepPage() {
   }
 
   async function handleGenerate(event) {
-    event.preventDefault();
+  event.preventDefault();
 
-    if (!selectedResumeId) {
-      setMessage({ type: 'error', text: 'Please choose or upload a resume first.' });
-      return;
-    }
-
-    if (!form.job_title.trim()) {
-      setMessage({ type: 'error', text: 'Please enter the target role.' });
-      return;
-    }
-
-    if (!form.job_description.trim()) {
-      setMessage({ type: 'error', text: 'Please paste the job description.' });
-      return;
-    }
-
-    if (cooldownLeft > 0) {
-      setMessage({
-        type: 'error',
-        text: `Please wait ${cooldownLeft}s before generating again.`,
-      });
-      return;
-    }
-
-    setGenerating(true);
-    setMessage(null);
-    resetPracticeState();
-
-    try {
-      const data = await generateResumeInterviewPrep(selectedResumeId, {
-        job_title: form.job_title,
-        job_description: form.job_description,
-        interview_type: form.interview_type,
-        difficulty: form.difficulty,
-        focus_area: form.focus_area,
-        user_notes: form.user_notes,
-      });
-
-      setResult(data);
-      setCooldownLeft(COOLDOWN_SECONDS);
-
-      if (data.status === 'success') {
-        setMessage({
-          type: 'success',
-          text: `${selectedInterviewType.label} interview questions generated successfully.`,
-        });
-      } else {
-        setMessage({
-          type: 'warning',
-          text: 'The enhanced interview coach is temporarily unavailable, so CareerLens created a safe practice kit.',
-        });
-      }
-    } catch (error) {
-      console.error('Interview prep generation failed:', error);
-      setMessage({
-        type: 'error',
-        text: 'We could not complete the interview prep request right now. Please try again later.',
-      });
-    }
+  if (!selectedResumeId) {
+    setMessage({ type: 'error', text: 'Please choose or upload a resume first.' });
+    return;
   }
+
+  if (!form.job_title.trim()) {
+    setMessage({ type: 'error', text: 'Please enter the target role.' });
+    return;
+  }
+
+  if (!form.job_description.trim()) {
+    setMessage({ type: 'error', text: 'Please paste the job description.' });
+    return;
+  }
+
+  if (cooldownLeft > 0) {
+    setMessage({
+      type: 'error',
+      text: `Please wait ${cooldownLeft}s before generating again.`,
+    });
+    return;
+  }
+
+  setGenerating(true);
+  setMessage(null);
+  resetPracticeState();
+
+  try {
+    const data = await generateResumeInterviewPrep(selectedResumeId, {
+      job_title: form.job_title,
+      job_description: form.job_description,
+      interview_type: form.interview_type,
+      difficulty: form.difficulty,
+      focus_area: form.focus_area,
+      user_notes: form.user_notes,
+    });
+
+    setResult(data);
+    setCooldownLeft(COOLDOWN_SECONDS);
+
+    if (data.status === 'success') {
+      setMessage({
+        type: 'success',
+        text: `${selectedInterviewType.label} interview questions generated successfully.`,
+      });
+    } else {
+      setMessage({
+        type: 'warning',
+        text: 'The enhanced interview coach is temporarily unavailable, so CareerLens created a safe practice kit.',
+      });
+    }
+  } catch (error) {
+    console.error('Interview prep generation failed:', error);
+    setMessage({
+      type: 'error',
+      text: 'We could not complete the interview prep request right now. Please try again later.',
+    });
+  } finally {
+    setGenerating(false);
+  }
+}
 
   return (
     <div className="space-y-7">
