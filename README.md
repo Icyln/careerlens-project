@@ -1,4 +1,4 @@
-CareerLens — AI-Assisted Career Readiness Platform
+CareerLens: AI-Assisted Career Readiness Platform
 ==================================================
 
 CareerLens is a full-stack career assistance platform that helps job seekers analyze resume-job fit, improve resumes, generate application documents, prepare for interviews, and track job applications in one connected workflow.
